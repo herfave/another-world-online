@@ -1,0 +1,3 @@
+Edited CameraInput for Shift for toggle pan
+Edited CameraUI to update toast UI
+Edited BaseCamera for relative Y lerp

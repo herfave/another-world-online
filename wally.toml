@@ -1,0 +1,28 @@
+[package]
+name = "seyaidev/projectrails"
+description = "a game framework written by herfavesenpai"
+version = "0.0.2"
+realm = "shared"
+registry = "https://github.com/upliftgames/wally-index"
+
+[dependencies]
+Knit = "sleitnick/knit@*"
+EnumList = "sleitnick/enum-list@*"
+Signal = "sleitnick/signal@*"
+TableUtil = "sleitnick/table-util@*"
+Timer = "sleitnick/timer@*"
+Streamable = "sleitnick/streamable@*"
+Promise = "evaera/promise@*"
+gooey-particles = "passhley/gooey-particles@*"
+Janitor = "howmanysmall/janitor@*"
+WaitFor = "sleitnick/wait-for@0.2.1"
+# Roact17 = "core-packages/roact-compat@17.0.1-rc.16.1"
+Comm = "sleitnick/comm@0.3.1"
+Component = "sleitnick/component@*"
+React = "core-packages/react@17.0.1-rc.16"
+ReactRoblox = "core-packages/react-roblox@17.0.1-rc.16"
+Fusion = "elttob/fusion@0.2.0"
+Input = "sleitnick/input@2.1.1"
+
+[server-dependencies]
+Cmdr = "evaera/cmdr@1.9.0"

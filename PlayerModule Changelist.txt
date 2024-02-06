@@ -1,0 +1,6 @@
+PlayerModule In Another World desc
+A modified PlayerModule (mainly camera changes) that create a slightly more cohesive gameplay experience without reinventing the wheel.
+
+Current changes:
+- Unanchors camera from character Y-axis with a spring.
+- Moves CameraToggle binding from RMB to Left/Right Shift
