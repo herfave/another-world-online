@@ -11,11 +11,7 @@
         "ReplicatedFirst": {
             "$ignoreUnknownInstances": true,
             "$className": "ReplicatedFirst",
-
-            "ClientChickyMods": {
-                "$className": "Folder",
-                "$path": "src/ClientChickyMods"
-            }
+            "$path": "src/ReplicatedFirst"
         },
 
         "ReplicatedStorage": {

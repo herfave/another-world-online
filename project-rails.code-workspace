@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"robloxLsp.hint.variableType": false,
+		"robloxLsp.hint.paramType": false
+	}
+}

@@ -8,9 +8,9 @@ registry = "https://github.com/upliftgames/wally-index"
 [dependencies]
 Knit = "sleitnick/knit@*"
 EnumList = "sleitnick/enum-list@*"
-Signal = "sleitnick/signal@*"
-TableUtil = "sleitnick/table-util@*"
-Timer = "sleitnick/timer@*"
+Signal = "sleitnick/signal@1.4.2"
+TableUtil = "sleitnick/table-util@1.2.0"
+Timer = "sleitnick/timer@1.1.2"
 Streamable = "sleitnick/streamable@*"
 Promise = "evaera/promise@*"
 gooey-particles = "passhley/gooey-particles@*"
@@ -25,4 +25,4 @@ Fusion = "elttob/fusion@0.2.0"
 Input = "sleitnick/input@2.1.1"
 
 [server-dependencies]
-Cmdr = "evaera/cmdr@1.9.0"
+Cmdr = "evaera/cmdr@1.12.0"
