@@ -91,6 +91,41 @@ function ChickynoidService:GetPlayerSimulation(player: Player | number)
 	end)
 end
 
+function ChickynoidService:GetPlayerRecord(player: Player | number, retry : boolean | nil)
+	return Promise.new(function(resolve, reject)
+		local userId = typeof(player) == "number" and player or player.UserId
+		-- search for the player sim
+		local record = nil
+		local function search()
+			if ChickyServer then
+				if ChickyServer.playerRecords then
+					local playerRecord = ChickyServer.playerRecords[userId]
+					if playerRecord then
+						if playerRecord.chickynoid then
+							return playerRecord
+						end
+					end
+				end
+			end
+		end
+
+		record = search()
+		if not record and retry then
+			repeat
+				task.wait(0.1)
+				record = search()
+			until record
+		end
+
+		if record then
+			resolve(record)
+			return
+		end
+
+		reject("Could not get player record")
+	end)
+end
+
 --- Damages the player by a given amount, then returns the player's new health and old health, in that order
 --  Also useful for healing
 function ChickynoidService:DamagePlayer(player: Player | number, damage: number)

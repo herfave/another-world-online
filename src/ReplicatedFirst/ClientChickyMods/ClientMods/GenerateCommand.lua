@@ -81,7 +81,8 @@ function module:GenerateCommand(command, serverTime: number, dt: number)
     command.serverTime = serverTime
     command.boost = 0
     command.a = 0
-    command.la = 0
+    command.la = Vector3.zero
+    command.p = Vector3.zero
 
     GetControlModule()
     if ControlModule ~= nil then
@@ -127,7 +128,7 @@ function module:GenerateCommand(command, serverTime: number, dt: number)
         end
 
         --Fire!
-        -- command.f = UserInputService:IsKeyDown(Enum.KeyCode.B) and 1 or 0
+        command.f = UserInputService:IsKeyDown(Enum.KeyCode.B) and 1 or 0
 
         -- --Fly?
         -- if UserInputService:IsKeyDown(Enum.KeyCode.F) then
@@ -160,8 +161,9 @@ function module:GenerateCommand(command, serverTime: number, dt: number)
     
     -- camera look direction
     local Camera = workspace.CurrentCamera
-    local _, Y, _ = Camera.CFrame:ToEulerAnglesYXZ()
-    command.la = Y -- radians!
+    local x,y,z = Camera.CFrame:ToEulerAnglesYXZ()
+    command.la = Vector3.new(x,y,z) -- radians!
+    command.p = Camera.CFrame.Position
 
     --Translate the move vector relative to the camera
     local rawMoveVector = self:CalculateRawMoveVector(Vector3.new(command.x, 0, command.z))

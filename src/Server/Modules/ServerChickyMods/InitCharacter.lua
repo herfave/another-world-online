@@ -9,9 +9,7 @@ function module:Setup(_server)
 
 	local function initPlayerRecord(serv, playerRecord)
 		if initialized[playerRecord.userId] == nil then
-			playerRecord:SetCharacterMod("NicerHumanoid")
 			initialized[playerRecord.userId] = playerRecord
-			print("initialized with characterMod", playerRecord.characterMod)
 		end
 		print("init playerRecord")
 	end

@@ -222,10 +222,12 @@ function CharacterData:ModuleSetup()
 	CharacterData.packFunctions = {
         position = "Vector3",
         angle = "Float16",
+        angleX = "Float16",
+        angleZ = "Float16",
         stepUp = "Float16",
 		flatSpeed = "Float16",
         exclusiveAnimTime = "Float32",
-        exclusiveSoundTime = "Number",
+        exclusiveSoundTime = "Float32",
 		animCounter0 = "Byte",
 		animNum0 = "Byte",
 		animCounter1 = "Byte",
@@ -288,9 +290,12 @@ function CharacterData:ModuleSetup()
 	CharacterData.lerpFunctions = {
         position = Lerp,
         angle = AngleLerp,
+        angleX = AngleLerp,
+        angleZ = AngleLerp,
         stepUp = NumberLerp,
 		flatSpeed = NumberLerp,
         exclusiveAnimTime = Raw,
+        exclusiveSoundTime = Raw,
 		
 		animCounter0 = Raw,
 		animNum0 = Raw,
@@ -354,6 +359,8 @@ function CharacterData.new()
         serialized = {
             position = Vector3.zero,
             angle = 0,
+			angleX = 0,
+			angleZ = 0,
             stepUp = 0,
 			flatSpeed = 0,
             exclusiveAnimTime = 0,
@@ -602,7 +609,7 @@ function CharacterData:SerializeToBitBuffer(previousData, buf : buffer, offset: 
 		for keyIndex, key in CharacterData.keys do
 			local value = self.serialized[key]
 			local func = CharacterData.methods[CharacterData.packFunctions[key]]
-            
+
             local valueA = previousData.serialized[key]
             local valueB = value
 
@@ -631,6 +638,8 @@ function CharacterData:SerializeToBitBufferFast(buf : buffer, offset: number)
 	
 	offset = WriteVector3(buf, offset, serialized.position)
 	offset = WriteFloat16(buf, offset, serialized.angle)
+	offset = WriteFloat16(buf, offset, serialized.angleX)
+	offset = WriteFloat16(buf, offset, serialized.angleZ)
 	offset = WriteFloat16(buf, offset, serialized.stepUp)
 	offset = WriteFloat16(buf, offset, serialized.flatSpeed)
 	offset = WriteFloat32(buf, offset, serialized.exclusiveAnimTime)
@@ -641,7 +650,21 @@ function CharacterData:SerializeToBitBufferFast(buf : buffer, offset: number)
 	offset = WriteByte(buf, offset, serialized.animCounter2)
 	offset = WriteByte(buf, offset, serialized.animNum2)
 	offset = WriteByte(buf, offset, serialized.animCounter3)
-	offset = WriteByte(buf, offset, serialized.animNum3)	
+	offset = WriteByte(buf, offset, serialized.animNum3)
+
+	offset = WriteByte(buf, offset, serialized.exclusiveSoundTime)
+	offset = WriteByte(buf, offset, serialized.soundCounter0)
+	offset = WriteByte(buf, offset, serialized.soundNum0)
+	offset = WriteByte(buf, offset, serialized.soundCounter1)
+	offset = WriteByte(buf, offset, serialized.soundNum1)
+	offset = WriteByte(buf, offset, serialized.soundCounter2)
+	offset = WriteByte(buf, offset, serialized.soundNum2)
+	offset = WriteByte(buf, offset, serialized.soundCounter3)
+	offset = WriteByte(buf, offset, serialized.soundNum3)
+	offset = WriteByte(buf, offset, serialized.particlesCounter0)
+	offset = WriteByte(buf, offset, serialized.particlesNum0)
+	offset = WriteByte(buf, offset, serialized.particlesCounter1)
+	offset = WriteByte(buf, offset, serialized.particlesNum1)
 
 	buffer.writeu16(buf, contentWritePos, contentBits)
 	return offset

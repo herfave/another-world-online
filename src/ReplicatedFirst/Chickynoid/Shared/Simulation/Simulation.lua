@@ -124,7 +124,7 @@ function Simulation:RegisterMoveState(name, updateState, alwaysThink, startState
 end
 
 function Simulation:SetMoveState(name)
-    print(`SET MOVE STATE: {name}`)
+    -- print(`SET MOVE STATE: {name}`)
     local index = self.moveStateNames[name]
     if (index) then
 

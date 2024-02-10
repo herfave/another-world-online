@@ -22,7 +22,8 @@ function module:GetCommandLayout()
 		self.commandLayout:Add("j", CrunchTable.Enum.FLOAT)
 
 		self.commandLayout:Add("a", CrunchTable.Enum.INT32)
-		self.commandLayout:Add("la", CrunchTable.Enum.FLOAT)
+		self.commandLayout:Add("la", CrunchTable.Enum.VECTOR3)
+		self.commandLayout:Add("p", CrunchTable.Enum.VECTOR3)
 	end
 	
 	return self.commandLayout	

@@ -122,7 +122,7 @@ function module:GetCharacterModel(userId, source)
 
 		srcModel.Parent = game.Lighting
 		srcModel.Name = tostring(userId)
-		h.DisplayName = player.DisplayName
+		h.DisplayName = player.DisplayName or player.Name
 
 		-- create nametag
 		local head = srcModel:FindFirstChild("Head")

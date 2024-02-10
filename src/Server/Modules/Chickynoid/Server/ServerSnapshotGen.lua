@@ -28,7 +28,7 @@ local function GetCacheItem(otherUserId, serverFrame, comparisonFrame)
 	if (rec == nil) then
 		return nil
 	end
-	
+
 	if (comparisonFrame == nil) then
 		return rec.raw
 	end
@@ -112,7 +112,7 @@ function module:DoWork(playerRecords, serverTotalFrames, serverSimulationTime, d
 		local queue = {}
 		tempQueues[userId] = queue
 		
-		local comparisonFrame = playerRecord.lastConfirmedSnapshotServerFrame		
+		local comparisonFrame = playerRecord.lastConfirmedSnapshotServerFrame
 		
 		--in case there are no other players visible
 		currentPacket = {}
@@ -126,7 +126,7 @@ function module:DoWork(playerRecords, serverTotalFrames, serverSimulationTime, d
 		end
 		local comparisonVisList = playerRecord.visHistoryList[comparisonFrame]
 		if (comparisonVisList == nil) then
-			comparisonVisList = {} --Assume we couldn't see anything 
+			comparisonVisList = {} --Assume we couldn't see anything
 		end
 		
 		 
@@ -177,11 +177,12 @@ function module:DoWork(playerRecords, serverTotalFrames, serverSimulationTime, d
 				cacheRec.offset = 1
 				cacheRec.offset = CharacterData.SerializeToBitBuffer(characterData, prevCharacterData, cacheRec.writeBuffer, cacheRec.offset)
 				
-				print("updated buffer offset?")
+				-- print("updated buffer offset?", cacheRec.offset)
 
 				if (prevCharacterData == nil) then
 					--if its not deltacompressed, store it raw (comparisonFrame = nil)
 					StoreCacheItem(otherUserId, serverTotalFrames, nil, cacheRec)
+					print('stored raw')
 				else
 					--store it and flag it as being a delta
 					StoreCacheItem(otherUserId, serverTotalFrames, comparisonFrame, cacheRec)
@@ -190,7 +191,7 @@ function module:DoWork(playerRecords, serverTotalFrames, serverSimulationTime, d
 								
 				statistics.generated+=1
 			else
-				--print("got cached ", comparisonFrame)
+				-- print("got cached ", comparisonFrame)
 				statistics.cached += 1
 			end
 						

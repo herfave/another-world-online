@@ -53,6 +53,10 @@ function module:ServerSetup()
 	self:RegisterAnimation("GroundAttack3")
 	self:RegisterAnimation("GroundAttack4")
 	self:RegisterAnimation("GroundAttack5")
+
+	self:RegisterAnimation("AirAttack1")
+	self:RegisterAnimation("AirAttack2")
+	self:RegisterAnimation("AirAttack3")
 end
 
 return module

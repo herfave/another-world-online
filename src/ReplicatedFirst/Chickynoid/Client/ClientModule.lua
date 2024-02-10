@@ -376,7 +376,6 @@ function ClientModule:Setup()
     local mods = ClientMods:GetMods("clientmods")
     for _, mod in mods do
         mod:Setup(self)
-		print("Loaded", _)
     end
 
     --WeaponModule

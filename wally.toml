@@ -16,13 +16,23 @@ Promise = "evaera/promise@*"
 gooey-particles = "passhley/gooey-particles@*"
 Janitor = "howmanysmall/janitor@*"
 WaitFor = "sleitnick/wait-for@0.2.1"
-# Roact17 = "core-packages/roact-compat@17.0.1-rc.16.1"
 Comm = "sleitnick/comm@0.3.1"
 Component = "sleitnick/component@*"
-React = "core-packages/react@17.0.1-rc.16"
-ReactRoblox = "core-packages/react-roblox@17.0.1-rc.16"
-Fusion = "elttob/fusion@0.2.0"
 Input = "sleitnick/input@2.1.1"
+
+# React dependencies
+React = "jsdotlua/react@^17.0.2"
+ReactRoblox = "jsdotlua/react-roblox@^17.0.2"
+ReactSpring = "chriscerie/react-spring@^2.0.0"
+ReactErrorBoundary = "chriscerie/react-error-boundary@^0.2.0"
+RoactTemplate = "corecii/roact-template@^0.2.0"
+
+# ECS dependencies
+Matter = "matter-ecs/matter@0.7.0"
+Plasma = "matter-ecs/plasma@0.4.2"
+Net = "yetanotherclown/net@0.7.0"
+Rewire = "sayhisam1/rewire@0.3.0"
+RemotePacketSizeCounter = "pysephwasntavailable/remotepacketsizecounter@2.4.1"
 
 [server-dependencies]
 Cmdr = "evaera/cmdr@1.12.0"

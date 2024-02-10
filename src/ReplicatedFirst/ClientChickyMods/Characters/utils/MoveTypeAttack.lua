@@ -20,23 +20,37 @@ function module:ModifySimulation(simulation)
     simulation.state.attackTime = 0
     simulation.state.timeSinceLastAttack = 0
     simulation.state.attackCombo = 0
+    simulation.state.attackCooldown = 0
 end
 
+local MAX_COMBO = 3
+
 local function resetAttack(simulation)
-    -- increment combo and play attack anim
-    if simulation.state.attackCombo < 5 then
+    -- don't attack during cooldown!
+    if simulation.state.attackCooldown > 0 then return false end
+
+    local onGround = nil
+    onGround = simulation:DoGroundCheck(simulation.state.position)
+
+    if simulation.state.attackCombo < MAX_COMBO then
+        -- go on cooldown
         simulation.state.attackCombo += 1
+        if simulation.state.attackCombo == MAX_COMBO then
+            simulation.state.attackCooldown = 1.5
+        end
+
+        local state = onGround ~= nil and "Ground" or "Air"
+
         simulation.characterData:PlayAnimation(
-            `GroundAttack{simulation.state.attackCombo}`,
+            `{state}Attack{simulation.state.attackCombo}`,
             Enums.AnimChannel.Channel0, true
         )
         local playerRotation = CFrame.fromOrientation(0, simulation.state.angle, 0)
         simulation.state.vel = playerRotation.LookVector * simulation.constants.attackVelocity
         simulation.state.attackTime = 0
         simulation.state.timeSinceLastAttack = 0
-    else
-        simulation.state.vel = Vector3.zero
-        simulation.state.attackCombo = 0
+
+        return true
     end
 end
 
@@ -54,12 +68,16 @@ function module.AlwaysThink(simulation, cmd)
     local moveState = simulation:GetMoveState()
     simulation.state.timeSinceLastAttack += dt
 
+    if simulation.state.attackCooldown > 0 then
+        simulation.state.attackCooldown -= dt
+    end
+
     if simulation.state.timeSinceLastAttack > 0.7 then
         simulation.state.attackCombo = 0
     end
 
     -- listen for attack input
-    if cmd.a > 0 and moveState.name ~= "Attacking" then
+    if cmd.a > 0 and moveState.name ~= "Attacking" and simulation.state.attackCooldown <= 0 then
         simulation:SetMoveState("Attacking")
         return
     end

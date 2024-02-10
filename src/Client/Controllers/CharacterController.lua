@@ -52,46 +52,24 @@ function CharacterController:KnitStart()
     -- // TODO: change to when chickynoid character is initialized
     repeat
         task.wait()
-        print("waiting for client")
+        -- print("waiting for client")
     until ChickyClient.localChickynoid ~= nil
 
     self.localChickynoid = ChickyClient.localChickynoid
 
-    --// load in SPEED
-    local CurrentCamera = workspace.CurrentCamera
-    local newLines = SpeedLines:Clone()
-    self.speedJanitor:Add(newLines)
-    local emitter = newLines:FindFirstChild("Emitter", true)
-    newLines.Parent = CurrentCamera
-    RunService:BindToRenderStep("SpeedLines", Enum.RenderPriority.Camera.Value + 1, function()
-        if not newLines then
-            RunService:UnbindFromRenderStep("SpeedLines")
-            return
-        end
-        newLines.CFrame = CurrentCamera.CFrame
-        local simulation = self:GetSimulation()
-        if simulation then
-            if simulation.state.currentSpeed > simulation.constants.maxSpeed then
-                if not emitter.Enabled then 
-                    emitter.Enabled = true
-                end
-                return
-            elseif emitter.Enabled then
-                emitter.Enabled = false
-            end
-        end
-    end)
+    self.ChickynoidAddedEvent:Fire(self.localChickynoid)
 
     self.Keyboard = Keyboard.new()
     self.Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
         if key == Enum.KeyCode.Y then
         end
     end)
+
 end
 
 function CharacterController:KnitInit()
     self.speedJanitor = Janitor.new()
-    self.CharacterAddedEvent = Signal.new() -- // Knit Controllers should connect to this event if the character is needed
+    self.ChickynoidAddedEvent = Signal.new() -- // Knit Controllers should connect to this event if the character is needed
 end
 
 

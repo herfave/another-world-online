@@ -183,7 +183,7 @@ function ServerModule:AssignSlot(playerRecord)
     return false
 end
 
-function ServerModule:AddConnection(userId, player)
+function ServerModule:AddConnection(userId, player, characterMod)
     if self.playerRecords[userId] ~= nil or self.loadingPlayerRecords[userId] ~= nil then
         warn("Player was already connected.", userId)
         self:PlayerDisconnected(userId)
@@ -211,7 +211,7 @@ function ServerModule:AddConnection(userId, player)
 	playerRecord.OnBeforePlayerSpawn = FastSignal.new()
 	playerRecord.visHistoryList = {}
 
-    playerRecord.characterMod = "NicerHumanoid"
+    playerRecord.characterMod = characterMod or "NicerHumanoid"
 	 	
 	playerRecord.lastConfirmedSnapshotServerFrame = nil --Stays nil til a player confirms they've seen a whole snapshot, for delta compression purposes
 		

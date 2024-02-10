@@ -5,8 +5,18 @@ local Enums = require(path.Enums)
 
 --Call this on both the client and server!
 function module:ModifySimulation(simulation)
-    simulation:RegisterMoveState("Base", self.ActiveThink)
+    simulation:RegisterMoveState("Base", self.ActiveThink, self.AlwaysThink)
     simulation:SetMoveState("Base")
+    
+    simulation.state.look = Vector3.new()
+    simulation.state.camera = Vector3.new()
+end
+
+function module.AlwaysThink(simulation, cmd)
+    -- update look
+    local lookCF = CFrame.fromOrientation(cmd.la.X, cmd.la.Y, cmd.la.Z)
+    simulation.state.look = lookCF.LookVector
+    simulation.state.camera = cmd.p
 end
 
 function module.ActiveThink(simulation, cmd)
