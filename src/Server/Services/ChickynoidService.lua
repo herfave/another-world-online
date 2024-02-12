@@ -244,7 +244,7 @@ function ChickynoidService:KnitInit()
 
 	print("Initialized ChickynoidService. Waiting for ChickyServer...")
 	task.wait()
-  ChickyServer:Setup()
+  	ChickyServer:Setup()
 	print("Done.")
 end
 

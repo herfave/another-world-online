@@ -22,6 +22,10 @@ local Knit = require(Packages.Knit)
 local Matter = require(Packages.Matter)
 
 
+local playerPosSharedTable = SharedTable.new({})
+game:GetService("SharedTableRegistry"):SetSharedTable("MOB_POS", playerPosSharedTable)
+
+
 local MatterService = Knit.CreateService({
     Name = "MatterService";
     Client = {
@@ -79,6 +83,21 @@ function MatterService:GetWorld()
     return self._world
 end
 
+function MatterService:MapEntityToRecord(userId, entityId, record)
+    if not self._entityIdChickynoidMap[userId] then
+        self._entityIdChickynoidMap[userId] = {
+            EntityId = entityId,
+            Record = record
+        }
+    end
+end
+
+function MatterService:ClearEntityFromMap(userId)
+    self._entityIdChickynoidMap[userId] = nil
+
+    playerPosSharedTable[map.EntityId] = nil
+end
+
 function MatterService:KnitStart()
     local world, state = startWorld({
         script.Systems,
@@ -104,10 +123,7 @@ function MatterService:KnitStart()
 
         -- wait for chickynoid playerrecord
         Knit.GetService("ChickynoidService"):GetPlayerRecord(player, true):andThen(function(record)
-            self._entityIdChickynoidMap[player.UserId] = {
-                EntityId = playerEntityId,
-                Record = record
-            }
+            self:MapEntityToRecord(player.UserId, playerEntityId, record)
         end):catch(warn)
     end
 
@@ -117,14 +133,14 @@ function MatterService:KnitStart()
     game.Players.PlayerAdded:Connect(playerAdded)
 
     game.Players.PlayerRemoving:Connect(function(player)
-        self._entityIdChickynoidMap[player.UserId] = nil
+        self:ClearEntityFromMap(player.UserId)
     end)
 
     -- update player positions
-
     game:GetService("RunService").PostSimulation:Connect(function()
         for userId, map in self._entityIdChickynoidMap do
             if not world:contains(map.EntityId) then continue end -- deal with this later
+            -- TODO: only map entities with Mob position (don't map chests and other interacts)
             local position = world:get(map.EntityId, Components.Position)
             if position then
                 -- print(map.Record)
@@ -133,6 +149,7 @@ function MatterService:KnitStart()
                     world:insert(map.EntityId, position:patch({
                         value = recordPos
                     }))
+                    playerPosSharedTable[map.EntityId] = recordPos
                 end
             end
         end
