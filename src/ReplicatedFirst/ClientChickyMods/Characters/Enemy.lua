@@ -26,15 +26,20 @@ function module:Setup(simulation)
 	simulation.constants.gravity = -90
     simulation.state.look = Vector3.new()
 
+	simulation.constants.dynamicCollide = false
+
     -- setup base walking state
 	local MoveTypeBase = require(script.Parent.utils.MoveTypeBase)
 	MoveTypeBase:ModifySimulation(simulation)
 end
 
 function module:GetCharacterModel()
-    local enemymodel = ReplicatedStorage.Assets.Models.Enemy:Clone()
-    enemymodel.Parent = game.Lighting
-    enemymodel:AddTag("CameraIgnore")
+	local enemymodel = game.Lighting:FindFirstChild("MystFig") 
+	if not enemymodel then
+    	enemymodel = ReplicatedStorage.Assets.Models.MystFig:Clone()
+    	enemymodel.Parent = game.Lighting
+    	enemymodel:AddTag("CameraIgnore")
+	end
 
     local hip = (enemymodel.HumanoidRootPart.Size.y
 				* 0.5) +enemymodel.Humanoid.hipHeight

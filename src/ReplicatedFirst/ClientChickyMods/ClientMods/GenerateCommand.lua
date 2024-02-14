@@ -1,5 +1,10 @@
-local module = {}
+local module = {target = Vector3.zero}
 local Commands = script:GetChildren()
+
+local path = game.ReplicatedFirst.Chickynoid.Shared
+local MathUtils = require(path.Simulation.MathUtils)
+
+local _DEBUG_TARGET = true
 module.client = nil
 
 local UserInputService = game:GetService("UserInputService")
@@ -61,10 +66,43 @@ function module:Setup(_client)
             end
         end
     end)
+
+    if _DEBUG_TARGET then
+        self._debugTarget = Instance.new("Part")
+        self._debugTarget.Transparency = 0.5
+        self._debugTarget.Color = Color3.fromRGB(255, 0, 0)
+        self._debugTarget.Anchored = true
+        self._debugTarget.Size = Vector3.new(3, 5, 3)
+        self._debugTarget:AddTag("CameraIgnore")
+        self._debugTarget.Parent = workspace
+    end
 end
 
 function module:Step(_client, _deltaTime)
 
+    if _DEBUG_TARGET then
+        self._debugTarget.Position = self.target
+    end
+
+    local localChickynoid = _client.localChickynoid
+    local characters = _client.characters
+
+    if not localChickynoid then return end
+    if not localChickynoid.simulation then return end
+
+    local distanceToBeat = 20
+    local currentPosition = localChickynoid.simulation.state.position
+    self.target = Vector3.zero
+    for id, character in characters do
+        if id > 0 then continue end -- skip non-dummy characters
+        local otherPosition = character.position
+        local direction = (currentPosition - otherPosition)
+        local distance = direction.Magnitude
+        if distance < distanceToBeat then
+            distanceToBeat = distance
+            self.target = otherPosition
+        end
+    end    
 end
 
 
@@ -83,6 +121,8 @@ function module:GenerateCommand(command, serverTime: number, dt: number)
     command.a = 0
     command.la = Vector3.zero
     command.p = Vector3.zero
+    command.tx = 0
+    command.tz = 0
 
     GetControlModule()
     if ControlModule ~= nil then
@@ -169,6 +209,18 @@ function module:GenerateCommand(command, serverTime: number, dt: number)
     local rawMoveVector = self:CalculateRawMoveVector(Vector3.new(command.x, 0, command.z))
     command.x = rawMoveVector.X
     command.z = rawMoveVector.Z
+
+    --Get closest target dummy
+
+    local localChickynoid = self.client.localChickynoid
+    if not localChickynoid then return command end
+    if not localChickynoid.simulation then return command end
+
+    local currentPosition = localChickynoid.simulation.state.position
+    local flatPos = MathUtils:FlatVec(currentPosition)
+    local flatTarget = MathUtils:FlatVec(self.target)
+
+    command.t = (flatTarget - flatPos)
 
     return command
 end

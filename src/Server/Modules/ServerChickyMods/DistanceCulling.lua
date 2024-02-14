@@ -7,7 +7,7 @@ function module:Setup(_server) end
 
 module.gridSize = 64
 module.radius = 200
-module.angleThreshold = 95
+module.angleThreshold = 120
 
 function module:UpdateVisibility(server, debugBotBandwidth)
 	
@@ -61,16 +61,16 @@ function module:UpdateVisibility(server, debugBotBandwidth)
 				if (list ~= nil) then
 					for _,otherPlayerRecord in list do
 						if (otherPlayerRecord ~= playerRecord) then
-							playerRecord.visibilityList[otherPlayerRecord.userId] = otherPlayerRecord
-							-- local cameraPosition = playerRecord.chickynoid.simulation.state.camera
-							-- -- check their position to cull
-							-- local otherPosition = otherPlayerRecord.chickynoid.simulation.state.position
-							-- local controlVector = playerRecord.chickynoid.simulation.state.look
-							-- local directionVector = (otherPosition - cameraPosition)
+							local cameraPosition = playerRecord.chickynoid.simulation.state.camera
+							-- check their position to cull
+							local otherPosition = otherPlayerRecord.chickynoid.simulation.state.position
+							local controlVector = playerRecord.chickynoid.simulation.state.look
+							local directionVector = (otherPosition - cameraPosition)
 
-							-- local angle = math.floor(math.deg(directionVector.Unit:Angle(controlVector)))
-							-- if angle <= module.angleThreshold then
-							-- end
+							local angle = math.floor(math.deg(directionVector.Unit:Angle(controlVector)))
+							if angle <= module.angleThreshold then
+								playerRecord.visibilityList[otherPlayerRecord.userId] = otherPlayerRecord
+							end
 						end
 					end
 				end

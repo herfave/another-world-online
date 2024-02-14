@@ -23,6 +23,8 @@ local WeaponsModule = require(script.Parent.WeaponsServer)
 local CollisionModule = require(path.Shared.Simulation.CollisionModule)
 local Antilag = require(script.Parent.Antilag)
 local FastSignal = require(path.Shared.Vendor.FastSignal)
+local RemotePacketSizeCounter = require(path.Shared.Vendor.RemotePacketSizeCounter)
+
 local ServerMods = require(script.Parent.ServerMods)
 local Animations = require(path.Shared.Simulation.Animations)
 
@@ -325,6 +327,8 @@ function ServerModule:AddConnection(userId, player, characterMod)
         self.chickynoid = chickynoid
         chickynoid.playerRecord = self
 
+		-- This can be really inefficient when you have a ton of parts! Consider
+		-- changing this spawn behavior, maybe CollectionService or something.
         local list = {}
         for _, obj: SpawnLocation in pairs(workspace:GetDescendants()) do
             if obj:IsA("SpawnLocation") and obj.Enabled == true then
@@ -668,9 +672,8 @@ function ServerModule:UpdatePlayerStatesToPlayers()
 			event.playerStateDelta, event.playerStateDeltaFrame = playerRecord.chickynoid:ConstructPlayerStateDelta(self.serverTotalFrames)
 
 			-- // CHECK PACKET SIZE, PROBABLY HUGE FOR A BIG STATE
-			local packetCounter = require(game.ReplicatedStorage.Shared.RemotePacketSizeCounter)
-			local s = packetCounter.GetDataByteSize(event.playerStateDelta)
-			if s > 800 then
+			local s = RemotePacketSizeCounter.GetDataByteSize(event.playerStateDelta)
+			if s > 700 then
 				playerRecord:SendEventToClient(event)
 			else
 				playerRecord:SendUnreliableEventToClient(event)

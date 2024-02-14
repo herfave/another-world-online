@@ -10,14 +10,14 @@ local tree = BTreeCreator:Create(ServerStorage.EnemyTrees.BasicEnemy)
 local userId = script.Parent:GetAttribute("UserId")
 local entityId = script.Parent:GetAttribute("EntityId")
 
+local dt = 1/20
 local obj = {
     UserId = userId,
     EntityId = entityId,
+    _deltaTime = dt,
 }
 
-local dt = 1/20
 local function fixedUpdate()
-    
     task.desynchronize()
     tree:run(obj)
     task.synchronize()

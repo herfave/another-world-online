@@ -9,7 +9,7 @@ local SUCCESS,FAIL,RUNNING = 1,2,3
     -- objects attached to the tree have tables injected into them called Blackboards.
     -- these can be read from and written to by the tree using the Blackboard node, and can be accessed in tasks via object.Blackboard
 --
-local STMobPosition = game:GetService("SharedTableRegistry"):GetSharedTable("MOB_POSITION")
+
 function task.start(obj)
     --[[
         (optional) this function is called directly before the run method
@@ -31,16 +31,11 @@ function task.finish(obj, status)
     
 end	
 function task.run(obj)
-    --[[
-        This is the meat of your task. The run method does everything you want it to do.
-
-        Finish it by returning one of the following:
-            SUCCESS - The task did run successfully
-            FAIL    - The task did fail
-            RUNNING - The task is still running and will be called directly from parent node
-    --]]
-
-    local Blackboard = obj.Blackboard
+    if obj._waitTime > 0 then
+        obj._waitTime -= obj._deltaTime
+        return RUNNING
+    end
+    
     return SUCCESS
 end
 return task

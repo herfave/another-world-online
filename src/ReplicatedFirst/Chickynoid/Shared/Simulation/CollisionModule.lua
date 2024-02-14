@@ -408,8 +408,7 @@ function module:ProcessCollisionOnInstance(instance, playerSize)
         if module.hullRecords[instance] ~= nil then
             return
         end
-		
-		--[[
+
         if CollectionService:HasTag(instance, "Dynamic") then
             local record = {}
             record.instance = instance
@@ -431,9 +430,14 @@ function module:ProcessCollisionOnInstance(instance, playerSize)
             end
 
             table.insert(module.dynamicRecords, record)
+            
+            instance.Destroying:Connect(function()
+                local index = table.find(module.dynamicRecords, instance)
+                table.remove(module.dynamicRecords, index)
+            end)
 
             return
-        end]]--
+        end
 
         local record = {}
         record.instance = instance
@@ -709,7 +713,9 @@ function module:PlaneLineIntersect(normal, distance, V1, V2)
 end
 
 
-function module:Sweep(startPos, endPos)
+function module:Sweep(startPos, endPos, shouldDynamicCollide)
+    shouldDynamicCollide = (shouldDynamicCollide == nil) or shouldDynamicCollide
+
     local data = {}
     data.startPos = startPos
     data.endPos = endPos
@@ -759,17 +765,19 @@ function module:Sweep(startPos, endPos)
 	end
 
     --Collide with dynamic objects
-    if data.fraction >= SKIN_THICKNESS or data.allSolid == false then
-        for _, hullRecord in pairs(self.dynamicRecords) do
-            data.checks += 1
+    if shouldDynamicCollide then
+        if data.fraction >= SKIN_THICKNESS or data.allSolid == false then
+            for _, hullRecord in pairs(self.dynamicRecords) do
+                data.checks += 1
 
-            self:CheckBrushNoStuck(data, hullRecord)
-            if (data.allSolid == true) then
-                data.fraction = 0
-                break
-            end
-            if data.fraction < SKIN_THICKNESS then
-                break
+                self:CheckBrushNoStuck(data, hullRecord)
+                if (data.allSolid == true) then
+                    data.fraction = 0
+                    break
+                end
+                if data.fraction < SKIN_THICKNESS then
+                    break
+                end
             end
         end
     end

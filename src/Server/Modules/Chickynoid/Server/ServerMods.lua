@@ -45,7 +45,7 @@ end
 	@param container Instance -- Container holding mods.
 ]=]
 function module:RegisterMods(context: string, container: Instance)
-
+    debug.profilebegin("Register ServerMods")
     for _, mod in ipairs(container:GetDescendants()) do
         if not mod:IsA("ModuleScript") then
             continue
@@ -53,6 +53,8 @@ function module:RegisterMods(context: string, container: Instance)
 
         module:RegisterMod(context, mod)
     end
+
+    debug.profileend()
 end
 
 function module:GetMod(context, name)

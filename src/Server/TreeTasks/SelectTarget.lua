@@ -12,7 +12,7 @@ local SUCCESS,FAIL,RUNNING = 1,2,3
 local ServerStorage = game:GetService("ServerStorage")
 local SharedTableUtil = require(ServerStorage.Modules.SharedTableUtil)
 
-local STMobPosition = game:GetService("SharedTableRegistry"):GetSharedTable("MOB_POS")
+local STMobPosition = game:GetService("SharedTableRegistry"):GetSharedTable("MOB_POSITION")
 local STEnemyRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("ENEMY_REGISTRY")
 local userId = script.Parent:GetAttribute("UserId")
 

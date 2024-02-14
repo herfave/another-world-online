@@ -24,9 +24,10 @@ function module:GetCommandLayout()
 		self.commandLayout:Add("a", CrunchTable.Enum.INT32)
 		self.commandLayout:Add("la", CrunchTable.Enum.VECTOR3)
 		self.commandLayout:Add("p", CrunchTable.Enum.VECTOR3)
+		self.commandLayout:Add("t", CrunchTable.Enum.VECTOR3)
 	end
 	
-	return self.commandLayout	
+	return self.commandLayout
 end
 
 function module:EncodeCommand(command)
@@ -34,7 +35,7 @@ function module:EncodeCommand(command)
 end
 
 function module:DecodeCommand(command)
-	return CrunchTable:BinaryDecodeTable(command, self:GetCommandLayout()) 
+	return CrunchTable:BinaryDecodeTable(command, self:GetCommandLayout())
 end
 
 return module

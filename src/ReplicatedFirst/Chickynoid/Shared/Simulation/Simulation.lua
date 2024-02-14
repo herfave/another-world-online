@@ -289,7 +289,7 @@ end
 --STEPUP - the magic that lets us traverse uneven world geometry
 --the idea is that you redo the player movement but "if I was x units higher in the air"
 
-function Simulation:DoStepUp(pos, vel, deltaTime)
+function Simulation:DoStepUp(pos, vel, deltaTime, shouldDynamicCollide)
     local flatVel = MathUtils:FlatVec(vel)
 
     local stepVec = Vector3.new(0, self.constants.stepSize, 0)
@@ -298,7 +298,7 @@ function Simulation:DoStepUp(pos, vel, deltaTime)
     local headHit = CollisionModule:Sweep(pos, pos + stepVec)
 
     --Project forwards
-    local stepUpNewPos, stepUpNewVel, _stepHitSomething = self:ProjectVelocity(headHit.endPos, flatVel, deltaTime)
+    local stepUpNewPos, stepUpNewVel, _stepHitSomething = self:ProjectVelocity(headHit.endPos, flatVel, deltaTime, shouldDynamicCollide)
 
     --Trace back down
     local traceDownPos = stepUpNewPos
@@ -379,7 +379,7 @@ function Simulation:DoGroundCheck(pos)
     return nil
 end
 
-function Simulation:ProjectVelocity(startPos, startVel, deltaTime)
+function Simulation:ProjectVelocity(startPos, startVel, deltaTime, shouldDynamicCollide)
     local movePos = startPos
     local moveVel = startVel
     local hitSomething = false
@@ -401,7 +401,7 @@ function Simulation:ProjectVelocity(startPos, startVel, deltaTime)
         end
 
         --We only operate on a scaled down version of velocity
-        local result = CollisionModule:Sweep(movePos, movePos + (moveVel * timeLeft))
+        local result = CollisionModule:Sweep(movePos, movePos + (moveVel * timeLeft), shouldDynamicCollide)
 
         --Update our position
         if result.fraction > 0 then

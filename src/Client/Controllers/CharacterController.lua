@@ -39,6 +39,18 @@ function CharacterController:GetSimulation()
     return self.localChickynoid.simulation
 end
 
+function CharacterController:GetDummyCharacters()
+    if not ChickyClient.characters then return end
+    local dummies = {}
+    for id, character in ChickyClient.characters do
+        if id < 0 then
+            table.insert(dummies, character)
+        end
+    end
+
+    return dummies
+end
+
 function CharacterController:KnitStart()
     -- --// register mods
     ClientMods:RegisterMods("clientmods", ReplicatedFirst.ClientChickyMods.ClientMods)
@@ -60,11 +72,10 @@ function CharacterController:KnitStart()
     self.ChickynoidAddedEvent:Fire(self.localChickynoid)
 
     self.Keyboard = Keyboard.new()
-    self.Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
-        if key == Enum.KeyCode.Y then
-        end
-    end)
-
+    -- self.Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
+    --     if key == Enum.KeyCode.Y then
+    --     end
+    -- end)
 end
 
 function CharacterController:KnitInit()

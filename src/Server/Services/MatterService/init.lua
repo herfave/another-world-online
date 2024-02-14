@@ -21,17 +21,15 @@ local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 local Matter = require(Packages.Matter)
 
-
-local playerPosSharedTable = SharedTable.new({})
-game:GetService("SharedTableRegistry"):SetSharedTable("MOB_POS", playerPosSharedTable)
-
-
 local MatterService = Knit.CreateService({
     Name = "MatterService";
     Client = {
         ClientModelReady = Knit.CreateSignal()
     };
 })
+
+local SharedTableRegistry = game:GetService("SharedTableRegistry")
+local STMobPosition = SharedTableRegistry:GetSharedTable("MOB_POSITION")
 
 function MatterService.Client:GetEntityComponent(player, id, componentName)
     local world = self.Server._world
@@ -93,9 +91,10 @@ function MatterService:MapEntityToRecord(userId, entityId, record)
 end
 
 function MatterService:ClearEntityFromMap(userId)
-    self._entityIdChickynoidMap[userId] = nil
+    local map = self._entityIdChickynoidMap[userId]
 
-    playerPosSharedTable[map.EntityId] = nil
+    STMobPosition[map.EntityId] = nil
+    self._entityIdChickynoidMap[userId] = nil
 end
 
 function MatterService:KnitStart()
@@ -149,7 +148,7 @@ function MatterService:KnitStart()
                     world:insert(map.EntityId, position:patch({
                         value = recordPos
                     }))
-                    playerPosSharedTable[map.EntityId] = recordPos
+                    STMobPosition[map.EntityId] = recordPos
                 end
             end
         end

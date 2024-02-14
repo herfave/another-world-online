@@ -160,7 +160,12 @@ function module.ActiveThink(simulation, cmd)
 
     --Sweep the player through the world, once flat along the ground, and once "step up'd"
     local stepUpResult = nil
-    local walkNewPos, walkNewVel, hitSomething = simulation:ProjectVelocity(simulation.state.position, simulation.state.vel, cmd.deltaTime)
+    local walkNewPos, walkNewVel, hitSomething = simulation:ProjectVelocity(
+        simulation.state.position,
+        simulation.state.vel,
+        cmd.deltaTime,
+        simulation.constants.dynamicCollide
+    )
 
     --Did we crashland
     if onGround == nil and hitSomething == true then
@@ -176,7 +181,12 @@ function module.ActiveThink(simulation, cmd)
 	
     -- Do we attempt a stepup?                              (not jumping!)
     if onGround ~= nil and hitSomething == true and simulation.state.jump == 0 then
-        stepUpResult = simulation:DoStepUp(simulation.state.position, simulation.state.vel, cmd.deltaTime)
+        stepUpResult = simulation:DoStepUp(
+            simulation.state.position,
+            simulation.state.vel,
+            cmd.deltaTime,
+            simulation.constants.dynamicCollide
+        )
     end
 
     --Choose which one to use, either the original move or the stepup

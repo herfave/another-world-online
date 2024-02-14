@@ -14,16 +14,17 @@ function module:ModifySimulation(simulation)
 
     -- attack physics constants
     simulation.constants.attackVelocity = 12
-    simulation.constants.attackFriction = 0.3
+    simulation.constants.attackFriction = 0.5
     
     -- attack state variables
     simulation.state.attackTime = 0
     simulation.state.timeSinceLastAttack = 0
     simulation.state.attackCombo = 0
     simulation.state.attackCooldown = 0
+    simulation.state.attackTarget = Vector3.zero
 end
 
-local MAX_COMBO = 3
+local MAX_COMBO = 5
 
 local function resetAttack(simulation)
     -- don't attack during cooldown!
@@ -45,7 +46,16 @@ local function resetAttack(simulation)
             `{state}Attack{simulation.state.attackCombo}`,
             Enums.AnimChannel.Channel0, true
         )
+
+        if simulation.state.attackTarget ~= Vector3.zero then
+            local vec = simulation.state.attackTarget
+            local angle = MathUtils:PlayerVecToAngle(vec)
+            simulation.state.targetAngle = angle
+            simulation.state.angle = angle
+        end
+
         local playerRotation = CFrame.fromOrientation(0, simulation.state.angle, 0)
+
         simulation.state.vel = playerRotation.LookVector * simulation.constants.attackVelocity
         simulation.state.attackTime = 0
         simulation.state.timeSinceLastAttack = 0
@@ -57,6 +67,8 @@ end
 function module.StartState(simulation, prevState)
     -- max out velocity to attack velocity
     resetAttack(simulation)
+    -- print("START ANGLE:", simulation.state.angle)
+    print(simulation.state.attackTarget)
 end
 
 function module.EndState(simulation, nextState)
@@ -76,14 +88,18 @@ function module.AlwaysThink(simulation, cmd)
         simulation.state.attackCombo = 0
     end
 
+
     -- listen for attack input
-    if cmd.a > 0 and moveState.name ~= "Attacking" and simulation.state.attackCooldown <= 0 then
+    if cmd.a == 1 and moveState.name ~= "Attacking" and simulation.state.attackCooldown <= 0 then
+        -- get target from cmd.t
+        simulation.state.attackTarget = cmd.t
         simulation:SetMoveState("Attacking")
         return
     end
 end
 
 function module.ActiveThink(simulation, cmd)
+    -- print(simulation.state.angle)
     local dt = cmd.deltaTime
     -- exit state after attack
     simulation.state.attackTime += dt

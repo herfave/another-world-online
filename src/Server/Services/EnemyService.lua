@@ -3,7 +3,6 @@
     Author: Aaron Jay (seyai_one)
 
 ]=]
-local SharedTableRegistry = game:GetService("SharedTableRegistry")
 
 local ServerStorage = game:GetService("ServerStorage")
 local Modules = ServerStorage:WaitForChild("Modules")
@@ -25,12 +24,13 @@ local EnemyService = Knit.CreateService({
     Client = {};
 })
 
-local STEnemyRegistry = SharedTable.new({})
-SharedTableRegistry:SetSharedTable("ENEMY_REGISTRY", STEnemyRegistry)
 
-local STEnemyCommands = SharedTable.new()
-SharedTableRegistry:SetSharedTable("ENEMY_COMMANDS", STEnemyCommands)
+local SharedTableRegistry = game:GetService("SharedTableRegistry")
+local STEnemyRegistry = SharedTableRegistry:GetSharedTable("ENEMY_REGISTRY")
+local STEnemyCommands = SharedTableRegistry:GetSharedTable("ENEMY_COMMANDS")
+local STMobPosition = SharedTableRegistry:GetSharedTable("MOB_POSITION")
 
+-- create an actor unit using a script template
 function EnemyService:CreateActor(actorName: string, userId: number, template: string)
     local actor = Instance.new("Actor")
     actor.Name = actorName
@@ -45,6 +45,7 @@ function EnemyService:CreateActor(actorName: string, userId: number, template: s
     return actor
 end
 
+-- create an enemy in Chickynoid, Matter, and in Parallel
 local userId = -26000
 function EnemyService:SpawnEnemy(enemyType : string)
     local thisUserId = userId
@@ -81,14 +82,24 @@ function EnemyService:SpawnEnemy(enemyType : string)
     end)
 
     -- get next command based on sharedtable output
-
-    local STEnemyRegistry = SharedTableRegistry:GetSharedTable("ENEMY_REGISTRY")
     SharedTableUtil.insert(STEnemyRegistry, entityId)
 
     -- setup actor for enemy ai
     local actor = self:CreateActor(`{entityId}_TreeThink`, thisUserId, "EnemyAI")
     actor:SetAttribute("EntityId", entityId)
     actor:FindFirstChild("Script").Enabled = true
+
+    -- create collision box
+    local collisionBox = Instance.new("Part")
+    collisionBox.Transparency = 1
+    collisionBox.CastShadow = false
+    collisionBox.Anchored = true
+    collisionBox.Size = Vector3.new(3, 5, 3)
+    collisionBox:AddTag("Dynamic")
+    collisionBox:SetAttribute("EntityId", entityId)
+    collisionBox.Parent = workspace:FindFirstChild("EnemyCollisions", true)
+
+    table.insert(self._collisionBoxes, collisionBox)
 
     playerRecord.BotThink = function(deltaTime)
         if (playerRecord.waitTime > 0) then
@@ -112,8 +123,6 @@ function EnemyService:SpawnEnemy(enemyType : string)
         command.y = stCommand.y
         command.z = stCommand.z
         command.fa = stCommand.fa
-
-        
 
         if (math.random() < 0.01) then
             playerRecord.waitTime = math.random() * 5
@@ -149,10 +158,24 @@ function EnemyService:KnitStart()
     end)
 
     task.wait(5)
-    for i = 1, 30 do
+    for i = 1, 10 do
         self:SpawnEnemy()
         task.wait(0.1)
     end
+
+    game:GetService("RunService").PostSimulation:Connect(function()
+        local instance, cf = {}, {}
+        for _, collisionBox in self._collisionBoxes do
+            local entityId = collisionBox:GetAttribute("EntityId")
+            if not entityId then continue end
+            if not STMobPosition[entityId] then continue end
+            
+            table.insert(instance, collisionBox)
+            table.insert(cf, CFrame.new(STMobPosition[entityId]))
+        end
+
+        workspace:BulkMoveTo(instance, cf, Enum.BulkMoveMode.FireCFrameChanged)
+    end)
 end
 
 
@@ -161,6 +184,8 @@ function EnemyService:KnitInit()
     actorsFolder.Name = "EnemyServiceActors"
     actorsFolder.Parent = game:GetService("ServerScriptService")
     self.ActorsFolder = actorsFolder
+
+    self._collisionBoxes = {}
 end
 
 
