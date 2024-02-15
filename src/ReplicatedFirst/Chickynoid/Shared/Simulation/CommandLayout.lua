@@ -21,10 +21,11 @@ function module:GetCommandLayout()
 		self.commandLayout:Add("f", CrunchTable.Enum.FLOAT)
 		self.commandLayout:Add("j", CrunchTable.Enum.FLOAT)
 
-		self.commandLayout:Add("a", CrunchTable.Enum.INT32)
-		self.commandLayout:Add("la", CrunchTable.Enum.VECTOR3)
-		self.commandLayout:Add("p", CrunchTable.Enum.VECTOR3)
-		self.commandLayout:Add("t", CrunchTable.Enum.VECTOR3)
+		self.commandLayout:Add("a", CrunchTable.Enum.INT32) -- attack command
+		self.commandLayout:Add("la", CrunchTable.Enum.VECTOR3) -- camera rotation
+		self.commandLayout:Add("p", CrunchTable.Enum.VECTOR3) -- camera position
+		self.commandLayout:Add("t", CrunchTable.Enum.VECTOR3) -- target
+		self.commandLayout:Add("am", CrunchTable.Enum.FLOAT) -- attack multiplier
 	end
 	
 	return self.commandLayout

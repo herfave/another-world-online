@@ -47,7 +47,7 @@ local function resetAttack(simulation)
             Enums.AnimChannel.Channel0, true
         )
 
-        if simulation.state.attackTarget ~= Vector3.zero then
+        if simulation.state.attackTarget.Magnitude > 0 then
             local vec = simulation.state.attackTarget
             local angle = MathUtils:PlayerVecToAngle(vec)
             simulation.state.targetAngle = angle
@@ -67,8 +67,6 @@ end
 function module.StartState(simulation, prevState)
     -- max out velocity to attack velocity
     resetAttack(simulation)
-    -- print("START ANGLE:", simulation.state.angle)
-    print(simulation.state.attackTarget)
 end
 
 function module.EndState(simulation, nextState)

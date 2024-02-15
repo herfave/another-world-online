@@ -121,8 +121,7 @@ function module:GenerateCommand(command, serverTime: number, dt: number)
     command.a = 0
     command.la = Vector3.zero
     command.p = Vector3.zero
-    command.tx = 0
-    command.tz = 0
+    command.t = Vector3.zero
 
     GetControlModule()
     if ControlModule ~= nil then
@@ -211,16 +210,17 @@ function module:GenerateCommand(command, serverTime: number, dt: number)
     command.z = rawMoveVector.Z
 
     --Get closest target dummy
+    if self.target ~= Vector3.zero then
+        local localChickynoid = self.client.localChickynoid
+        if not localChickynoid then return command end
+        if not localChickynoid.simulation then return command end
 
-    local localChickynoid = self.client.localChickynoid
-    if not localChickynoid then return command end
-    if not localChickynoid.simulation then return command end
+        local currentPosition = localChickynoid.simulation.state.position
+        local flatPos = MathUtils:FlatVec(currentPosition)
+        local flatTarget = MathUtils:FlatVec(self.target)
 
-    local currentPosition = localChickynoid.simulation.state.position
-    local flatPos = MathUtils:FlatVec(currentPosition)
-    local flatTarget = MathUtils:FlatVec(self.target)
-
-    command.t = (flatTarget - flatPos)
+        command.t = (flatTarget - flatPos)
+    end
 
     return command
 end

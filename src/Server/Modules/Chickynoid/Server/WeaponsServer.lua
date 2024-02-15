@@ -298,6 +298,8 @@ function module:QueryShotgun(playerRecord, server, origins, directions, serverTi
     return results
 end
 
+function module:QueryMelee(playerRecord, server, origin, direction, serverTime, debugText, raycastParams, range)
+end
 
 function module:Think(server, deltaTime)
 	for _, playerRecord in pairs(server:GetPlayers()) do
