@@ -71,7 +71,7 @@ function ProjectileSniper:ClientProcessCommand(command)
 
             local clientChickynoid = self.client:GetClientChickynoid()
             if clientChickynoid then
-                local origin = clientChickynoid.simulation.state.pos
+                local origin = clientChickynoid.simulation.state.position
                 local dest = command.fa
 
                 local vec = (dest - origin).Unit
@@ -173,6 +173,7 @@ function ProjectileSniper:ServerProcessCommand(command)
 
     if command.f and command.f > 0 and command.fa then
         if state.ammo > 0 and currentTime > state.nextFire then
+            print("SERVER WOWZA")
             --put weapon on cooldown
             state.ammo -= 1
             state.nextFire = currentTime + state.fireDelay
@@ -181,7 +182,7 @@ function ProjectileSniper:ServerProcessCommand(command)
  
             local serverChickynoid = self.playerRecord.chickynoid
             if serverChickynoid then
-                local origin = serverChickynoid.simulation.state.pos
+                local origin = serverChickynoid.simulation.state.position
                 local dest = command.fa
                 local vec = (dest - origin).Unit
               

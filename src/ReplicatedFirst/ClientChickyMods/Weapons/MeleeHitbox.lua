@@ -103,7 +103,7 @@ function MeleeHitbox:ServerProcessCommand(command)
     if command.am and command.am ~= 0 then
         local serverChickynoid = self.playerRecord.chickynoid
         if serverChickynoid then
-            local simulation = clientChickynoid.simulation
+            local simulation = serverChickynoid.simulation
             local playerRotation = CFrame.fromOrientation(0, simulation.state.angle, 0)
             local origin = simulation.state.position
             local vec = playerRotation.LookVector
@@ -140,8 +140,54 @@ function MeleeHitbox:ServerProcessCommand(command)
                     bulletRecord.otherPlayer = otherPlayer
                 end
             end
+            bulletRecord.OnBulletDie = function(bulletRecord)
+                print("HEYO")
+                local event = {}
+                event.t = Enums.EventType.BulletImpact
+                event.b = self:BuildImpactPacketString(bulletRecord.position, bulletRecord.normal, bulletRecord.surface, bulletRecord.bulletId)
+                
+                self.playerRecord:SendEventToClients(event)
+                
+                --Do the damage
+                if bulletRecord.otherPlayer then
+                    --Use the hitpoints mod to damage them!
+                    local HitPoints = ServerMods:GetMod("servermods", "Hitpoints")
+                    if HitPoints then
+                        HitPoints:DamagePlayer(bulletRecord.otherPlayer, 50)
+                    end
+                end
+            end
+
+            --Send an event to render this firing
+            local event = {}
+            event.t = Enums.EventType.BulletFire
+            event.b = self:BuildFirePacketString(origin, vec, 1000, 10, 0, bulletRecord.bulletId)
+
+            self.playerRecord:SendEventToClients(event)
         end
     end
+end
+
+function MeleeHitbox:BuildImpactPacketString(position, normal, surface, bulletId)
+    local buf = WriteBuffer.new()
+    
+    --these two first always
+    buf:WriteI16(self.weaponId)
+	buf:WriteU8(self.playerRecord.slot)
+    
+    
+    buf:WriteVector3(position)
+    buf:WriteI16(bulletId)
+
+
+    if (normal) then
+        buf:WriteU8(1)
+		buf:WriteVector3(normal)
+		buf:WriteU8(surface)
+    else
+        buf:WriteU8(0)
+    end
+    return buf:GetBuffer()
 end
 
 function MeleeHitbox:BuildFirePacketString(origin, vec, speed, maxDistance, drop, bulletId)
