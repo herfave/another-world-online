@@ -7,8 +7,13 @@ function module:Setup(server)
                 
         --Give a machine gun
         --playerRecord:AddWeaponByName("Machinegun", true)
+<<<<<<< Updated upstream
         playerRecord:AddWeaponByName("ProjectileSniper", true)
         
+=======
+        -- playerRecord:AddWeaponByName("ProjectileSniper", true)
+        playerRecord:AddWeaponByName("MeleeHitbox", true)
+>>>>>>> Stashed changes
     end)
 
     server.OnBeforePlayerSpawn:Connect(function(playerRecord)
