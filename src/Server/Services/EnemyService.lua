@@ -158,7 +158,7 @@ function EnemyService:KnitStart()
     end)
 
     task.wait(5)
-    for i = 1, 10 do
+    for i = 1, 3 do
         self:SpawnEnemy()
         task.wait(0.1)
     end

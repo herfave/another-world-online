@@ -15,6 +15,7 @@ local CharacterData = require(script.Parent.CharacterData)
 local MathUtils = require(script.Parent.MathUtils)
 local Enums = require(script.Parent.Parent.Enums)
 local DeltaTable = require(script.Parent.Parent.Vendor.DeltaTable)
+local CastHitbox = require(script.Parent.CastHitbox)
 
 function Simulation.new(userId)
     local self = setmetatable({}, Simulation)

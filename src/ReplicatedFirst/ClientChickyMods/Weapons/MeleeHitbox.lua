@@ -101,7 +101,6 @@ function MeleeHitbox:ServerProcessCommand(command)
     local state = self.state
 
     if command.am and command.am ~= 0 then
-        print(command.am)
         local serverChickynoid = self.playerRecord.chickynoid
         if serverChickynoid then
             local simulation = serverChickynoid.simulation

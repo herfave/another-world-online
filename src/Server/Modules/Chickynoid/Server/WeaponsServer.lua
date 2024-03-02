@@ -298,6 +298,37 @@ function module:QueryShotgun(playerRecord, server, origins, directions, serverTi
     return results
 end
 
+function module:QueryMelee(playerRecord, server, origin, direction, serverTime, debugText, raycastParams, range, size)
+    Antilag:PushPlayerPositionsToTime(playerRecord, serverTime, debugText)
+
+    if range == nil then
+        range = 1000
+    end
+
+    local rayCastResult = game.Workspace:Blockcast(CFrame.new(origin), size, direction * range, raycastParams)
+
+    local pos = nil
+    local normal = nil
+    local otherPlayerRecord = nil
+    local hitInstance = nil
+    if rayCastResult == nil then
+        pos = origin + direction * range
+    else
+        pos = rayCastResult.Position
+        normal = rayCastResult.Normal
+        hitInstance = rayCastResult.Instance
+
+        --See if its a player
+        local userId = rayCastResult.Instance:GetAttribute("player")
+        if userId then
+            otherPlayerRecord = server:GetPlayerByUserId(userId)
+        end
+    end
+
+    Antilag:Pop() --Don't forget!
+
+    return pos, normal, otherPlayerRecord, hitInstance
+end
 
 function module:Think(server, deltaTime)
 	for _, playerRecord in pairs(server:GetPlayers()) do
