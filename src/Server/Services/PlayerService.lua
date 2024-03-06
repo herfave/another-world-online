@@ -86,6 +86,44 @@ function PlayerService:KnitStart()
             -- spawn player
         player.CharacterAdded:Connect(function(character)
             local playerHumanoid = character:WaitForChild("Humanoid", 3)
+
+            playerHumanoid.EvaluateStateMachine = false
+            -- insert controllers
+            local controller: ControllerManager = ReplicatedStorage.Assets:FindFirstChild("CharacterController"):Clone()
+            controller.RootPart = character.PrimaryPart
+            controller.GroundController.GroundOffset = playerHumanoid.HipHeight
+            Instance.new("AirController", controller)
+            Instance.new("SwimController", controller)
+        
+
+            -- create sensors
+            local groundSensor: ControllerPartSensor = Instance.new("ControllerPartSensor")
+            groundSensor.SearchDistance = 4
+            groundSensor.SensorMode = Enum.SensorMode.Floor
+            groundSensor.Parent = character.PrimaryPart
+
+            local climbSensor: ControllerPartSensor = Instance.new("ControllerPartSensor")
+            climbSensor.SearchDistance = 1
+            climbSensor.SensorMode = Enum.SensorMode.Ladder
+            climbSensor.Parent = character.PrimaryPart
+
+        	local waterSensor = Instance.new("BuoyancySensor")
+            waterSensor.Parent = character.PrimaryPart
+
+            
+            controller.GroundSensor = groundSensor
+            controller.ClimbSensor = climbSensor
+
+            controller.Parent = character
+
+            -- debug: float vectorforce
+            -- local maxForce = character.PrimaryPart.AssemblyMass * workspace.Gravity * 1.1
+            -- local fakeAttackVector: LinearVelocity = Instance.new("LinearVelocity")
+            -- fakeAttackVector.VectorVelocity = (Vector3.zAxis + Vector3.yAxis).Unit * 16
+            -- fakeAttackVector.MaxForce = maxForce
+            -- fakeAttackVector.Attachment0 = character.PrimaryPart:FindFirstChild("RootRigAttachment")
+            -- fakeAttackVector.Parent = character.PrimaryPart
+
             playerHumanoid.Died:Connect(function()
                 task.delay(Players.RespawnTime, function()
                     player:LoadCharacter()
@@ -95,7 +133,7 @@ function PlayerService:KnitStart()
             task.wait()
             for _, v in ipairs(character:GetChildren()) do
                 if v:IsA("BasePart") then
-                    PhysicsService:SetPartCollisionGroup(v, "Players") -- // useful for disabling player-player collisions
+                    v.CollisionGroup = "Players" -- // useful for disabling player-player collisions
                 end
             end
 

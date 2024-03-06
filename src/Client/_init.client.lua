@@ -2,7 +2,6 @@ local LocalPlayer = game.Players.LocalPlayer
 -- set camera
 -- workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
 
-require(game:GetService("ReplicatedStorage").ReplicatedTweening)
 
 local Player = game.Players.LocalPlayer
 local PlayerScripts = Player:WaitForChild("PlayerScripts")
