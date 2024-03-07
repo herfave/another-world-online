@@ -1,0 +1,38 @@
+[package]
+name = "seyaidev/another-world-online"
+description = "a game framework written by herfavesenpai"
+version = "0.0.2"
+realm = "shared"
+registry = "https://github.com/upliftgames/wally-index"
+
+[dependencies]
+Knit = "sleitnick/knit@^1"
+EnumList = "sleitnick/enum-list@*"
+Signal = "sleitnick/signal@^1.4.2"
+TableUtil = "sleitnick/table-util@^1.2.0"
+Timer = "sleitnick/timer@^1.1.2"
+Streamable = "sleitnick/streamable@*"
+Promise = "evaera/promise@*"
+gooey-particles = "passhley/gooey-particles@*"
+Janitor = "howmanysmall/janitor@*"
+WaitFor = "sleitnick/wait-for@^0.2.1"
+Comm = "sleitnick/comm@^0.3.1"
+Component = "sleitnick/component@^2.4.8"
+Input = "sleitnick/input@^2.3.0"
+
+# React dependencies
+React = "jsdotlua/react@^17.0.2"
+ReactRoblox = "jsdotlua/react-roblox@^17.0.2"
+ReactSpring = "chriscerie/react-spring@^2.0.0"
+ReactErrorBoundary = "chriscerie/react-error-boundary@^0.2.0"
+RoactTemplate = "corecii/roact-template@^0.2.0"
+
+# ECS dependencies
+Matter = "matter-ecs/matter@0.7.0"
+Plasma = "matter-ecs/plasma@0.4.2"
+Net = "yetanotherclown/net@0.7.0"
+Rewire = "sayhisam1/rewire@0.3.0"
+RemotePacketSizeCounter = "pysephwasntavailable/remotepacketsizecounter@2.4.1"
+
+[server-dependencies]
+Cmdr = "evaera/cmdr@1.12.0"
