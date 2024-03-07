@@ -40,13 +40,13 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
         cm.ActiveController = cm:FindFirstChild(name)
     end
 
-    local stateMachine = FSM.new({
+    local stateMachine: FSM.StateMachineType = FSM.new({
         initial = "idle",
         events = {
             {
                 name = "walk",
                 to = "walking" ,
-                from = {"idle", "running", "falling", "attacking", "jumping"},
+                from = {"idle", "running", "falling", "attack_end", "jumping"},
             },
             {
                 name = "run",
@@ -56,7 +56,7 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
             {
                 name = "jump",
                 to = "jumping",
-                from = {"idle", "walking", "running", "falling", "attacking"},
+                from = {"idle", "walking", "running", "falling", "attack_end"},
             },
             {
                 name = "fall",
@@ -66,22 +66,27 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
             {
                 name = "attack",
                 to = "attacking",
-                from = {"idle", "walking", "running", "jumping", "falling"},
+                from = {"idle", "walking", "running", "jumping", "falling", "attack_end"},
+            },
+            {
+                name = "attack_end",
+                to = "attack_end",
+                from = "attacking",
             },
             {
                 name = "stop",
                 to = "idle",
-                from = {"walking", "running", "falling", "attacking", "jumping"},
+                from = {"walking", "running", "falling", "attack_end", "jumping"},
             },
             {
                 name = "climb",
                 to = "climbing",
-                from = {"idle", "walking", "running", "jumping", "falling", "attacking"},
+                from = {"idle", "walking", "running", "jumping", "falling", "attack_end"},
             },
             {
                 name = "dash",
                 to = "dashing",
-                from = {"idle", "walking", "running", "jumping", "falling", "attacking"},
+                from = {"idle", "walking", "running", "jumping", "falling", "attack_end"},
             }
         },
         callbacks = {
@@ -129,16 +134,41 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
                 self:PlayAnimation("Fall")
             end,
             on_attack = function(sm, event, from, to)
+                -- setup attack name
                 self.AttackCounter += 1
                 local state = "Ground"
                 if from == "jumping" or from == "falling" then
                    state = "Air"
                 end
+                local animName: string = state .. "Attack" .. tostring(self.AttackCounter)
 
-                self:PlayAnimation(state .. "Attack" .. tostring(self.AttackCounter))
+                -- get attack animation track
+                local track: AnimationTrack = self.Animations:GetTrack(animName)
+                -- allow for next attack earlier than the animation finishing
+                task.delay(track.Length - self.FrameTime * 15, function()
+                    self.AttackCancel = true
+                    sm.attack_end()
+                end)
 
+                -- allow other states to transition out of the attack_end state
+                if self._inAttack then
+                    task.cancel(self._inAttack)
+                end
+                self._inAttack = task.delay(track.Length, function()
+                    self.AttackEnded = true
+                end)
+
+                -- play animation
+                self:PlayAnimation(animName)
+                self.AttackEnded = false
+
+                -- reset attacks, put on cooldown after combo
                 if self.AttackCounter == 5 then
                     self.AttackCounter = 0 -- reset
+                    self.AttackOnCooldown = true
+                    task.delay(1.1, function()
+                        self.AttackOnCooldown = false
+                    end)
                 end
             end
         }
@@ -184,6 +214,8 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
     -- The Controller determines the type of locomotion and physics behavior
     local function updateStateAndActiveController()
        
+        if not self.AttackEnded then return end
+
         if checkClimbingState() then
             stateMachine.climb()
         elseif checkWalkingState() then
@@ -247,7 +279,8 @@ function CharacterController:InitActionListener(humanoid: Humanoid)
 
     -- listen for attacks
     self._janitor:Add(self.AttackEvent:Connect(function()
-        if stateMachine.can("attack") then
+        if stateMachine.can("attack") and self.AttackCancel and not self.AttackOnCooldown then
+            self.AttackCancel = false
             stateMachine.attack()
         end
     end))
@@ -278,15 +311,23 @@ function CharacterController:KnitStart()
 
         self:LoadAnimations(character)
         -- TODO: setup FSM so movedirection is only updated in moving states, not attacking states
-        self:InitStateMachine(controllerManager))
-        self:InitActionListener(humanoid))
+        self:InitStateMachine(controllerManager)
+        self:InitActionListener(humanoid)
         self.CharacterAddedEvent:Fire(character) -- // fire when loading the character is complete
 
+        self.FrameTime = 1/60
+        RunService.PostSimulation:Connect(function(dt)
+            self.FrameTime = dt
+        end)
     end)
 end
 
 
 function CharacterController:KnitInit()
+    self.AttackCancel = true
+    self.AttackOnCooldown = false
+    self.AttackEnded = true
+
     self._janitor = Janitor.new()
     self.CharacterAddedEvent = Signal.new() -- // Knit Controllers should connect to this event if the character is needed
     self.AttackEvent = Signal.new()

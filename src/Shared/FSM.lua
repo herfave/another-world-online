@@ -10,6 +10,10 @@ M.NO_TRANSITION = 2
 M.PENDING = 3
 M.CANCELLED = 4
 
+export type StateMachineType = {
+	[string]: (any) -> ()
+}
+
 local function do_callback(handler, args)
 	if handler then
 		return handler(unpack(args))

@@ -1,5 +1,5 @@
 {
-    "name": "sellout project",
+    "name": "another world online",
     "globIgnorePaths": [
         "src/**/*.spec.lua",
         "Packages/**/*.spec.lua"
