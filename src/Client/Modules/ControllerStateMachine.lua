@@ -74,7 +74,7 @@ return function(character)
     end
     
     -- Manage attribute for configuring Jump power
-    cm:SetAttribute("JumpImpulse", Vector3.new(0,1000,0))
+    cm:SetAttribute("JumpImpulse", Vector3.new(0,750,0))
     
     -- Jump input
     local function doJump(actionName, inputState, inputObject)

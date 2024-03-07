@@ -87,13 +87,20 @@ function PlayerService:KnitStart()
         player.CharacterAdded:Connect(function(character)
             local playerHumanoid = character:WaitForChild("Humanoid", 3)
 
+            local animate = character:FindFirstChild("Animate")
+            local health = character:FindFirstChild("Health")
+            animate.Enabled = false
+            health.Enabled = false
+            task.wait()
+            animate:Destroy()
+            health:Destroy()
+
             playerHumanoid.EvaluateStateMachine = false
-            -- insert controllers
+            -- modify controllers as needed
             local controller: ControllerManager = ReplicatedStorage.Assets:FindFirstChild("CharacterController"):Clone()
+            local groundController: GroundController = controller:FindFirstChild("GroundController")
             controller.RootPart = character.PrimaryPart
-            controller.GroundController.GroundOffset = playerHumanoid.HipHeight
-            Instance.new("AirController", controller)
-            Instance.new("SwimController", controller)
+            groundController.GroundOffset = playerHumanoid.HipHeight
         
 
             -- create sensors

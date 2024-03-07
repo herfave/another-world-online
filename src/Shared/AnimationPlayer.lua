@@ -38,7 +38,6 @@ function AnimationPlayer.new(Humanoid)
 	return self
 end
 
---- Adds an animation to use
 function AnimationPlayer:ClearAllTracks()
 	for i, v in pairs(self.Tracks) do
 		self.Tracks[i]:Destroy()
