@@ -42,6 +42,8 @@ end
 function MobService:CreateMob(): number
     local entityId = Knit.GetService("MatterService"):CreateEntity({
         Components.Mob { value = "TestMob" },
+        Components.MaxHealth { value = 100 },
+        Components.Health { value = 100 },
     })
 
     SharedTableUtil.insert(STEnemyRegistry, entityId)
@@ -49,14 +51,31 @@ function MobService:CreateMob(): number
     local actor = self:CreateActor(`{entityId}_TreeThink`, "EnemyAI")
     actor:SetAttribute("EntityId", entityId)
     actor:FindFirstChild("Script").Enabled = true
+    self._mobThinks[entityId] = actor
 
     return entityId
 end
 
+function MobService:DespawnMob(entityId: number)
+    local world = Knit.GetService("MatterService"):GetWorld()
+    if world:contains(entityId) then
+
+        if self._mobThinks[entityId] then
+            self._mobThinks[entityId]:FindFirstChild("Script").Enabled = false
+            task.delay(0.1, function()
+                self._mobThinks[entityId]:Destroy()
+                self._mobThinks[entityId] = nil
+            end)
+        end
+
+        world:despawn(entityId)
+    end
+end
+
 function MobService:KnitStart()
-    for i = 1, 20 do
+    for i = 1, 50 do
         self:CreateMob()
-        task.wait(1)
+        task.wait(0.2)
     end
 end
 

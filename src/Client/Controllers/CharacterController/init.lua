@@ -8,6 +8,7 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = game.Players.LocalPlayer
 local PlayerScripts = game.Players.LocalPlayer:WaitForChild("PlayerScripts")
 local Modules = PlayerScripts:WaitForChild("Modules")
+local OTSCamera = require(Modules.OTSCamera)
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
@@ -20,6 +21,11 @@ local Knit = require(Packages.Knit)
 local Signal = require(Packages.Signal)
 local WaitFor = require(Packages.WaitFor)
 local Janitor = require(Packages.Janitor)
+
+-- Comm setup
+local ClientComm = require(Packages.Comm).ClientComm
+local CombatComm = ClientComm.new(ReplicatedStorage:WaitForChild("UnreliableComm"), true, "CombatComm")
+local SendHitRequest = CombatComm:GetSignal("SendHitRequest")
 
 -- FSM callbacks
 local OnAttack = require(script.OnAttack)
@@ -178,10 +184,7 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
     local function updateMovementDirection()
         local humanoid = primaryPart.Parent:FindFirstChild("Humanoid")
         if not humanoid then return end
-        if not table.find(validMovementStates, stateMachine.current) then
-            cm.MovingDirection = Vector3.zero
-            return
-        end
+
         local dir = humanoid.MoveDirection
         if dir.Magnitude > 0 then
             cm.FacingDirection = dir
@@ -189,6 +192,10 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
             cm.FacingDirection = cm.RootPart.CFrame.LookVector
         end
 
+        if not table.find(validMovementStates, stateMachine.current) then
+            cm.MovingDirection = Vector3.zero
+            return
+        end
         cm.MovingDirection = dir
     end
 
@@ -209,7 +216,10 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
         end
     end)
 end
-
+--[=[
+    Starts listening to certain events that act on the state machine or ControllerManager
+    @param humanoid Humanoid -- the player's Humanoid object
+]=]
 function CharacterController:InitActionListener(humanoid: Humanoid)
     if not self.StateMachine then return end
     local stateMachine = self.StateMachine
@@ -231,7 +241,10 @@ function CharacterController:InitActionListener(humanoid: Humanoid)
         end
     end))
 end
-
+--[=[
+    Plays an animation with a given name if it exists
+    @param trackName string -- Name of animation track to play
+]=]
 function CharacterController:PlayAnimation(trackName: string)
     assert(self.Animations:GetTrack(trackName), "Could not find animation: " .. trackName)
     self.Animations:StopAllTracks()
@@ -239,6 +252,10 @@ function CharacterController:PlayAnimation(trackName: string)
     self.Animations:PlayTrack(trackName)
 end
 
+--[=[
+    Loads all player animations from a template in Assets
+    @param character Model -- Character model to load animations onto
+]=]
 function CharacterController:LoadAnimations(character: Model)
     local animator = character:FindFirstChild("Animator", true)
     self.Animations = AnimationPlayer.new(animator)
@@ -255,13 +272,15 @@ function CharacterController:KnitStart()
         local humanoid = character:WaitForChild("Humanoid")
         local controllerManager = character:FindFirstChildOfClass("ControllerManager")
 
+        -- setup basic attack hitbox
         local hitbox = HitboxModule.new(character, {
             OriginPart = character:WaitForChild("Default"),
             Size = Vector3.new(1, 5, 1),
             Direction = "Forward"
         })
-        self._janitor:Add(hitbox.ObjectHit:Connect(function(hit)
-            print("HIT:", hit)
+        self._janitor:Add(hitbox.ObjectHit:Connect(function(hit: Model)
+            -- send hit request
+            SendHitRequest:Fire(tonumber(hit.Name), "Basic")
         end))
         self.Hitbox = hitbox
 
@@ -277,6 +296,11 @@ function CharacterController:KnitStart()
         self.FrameTime = 1/60
         RunService.PostSimulation:Connect(function(dt)
             self.FrameTime = dt
+        end)
+
+        OTSCamera:Enable()
+        self._janitor:Add(function()
+            OTSCamera:Disable()
         end)
     end)
 end

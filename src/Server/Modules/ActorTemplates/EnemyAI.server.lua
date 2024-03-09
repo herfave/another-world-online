@@ -1,6 +1,7 @@
 local Packages = game:GetService("ReplicatedStorage").Packages
 local Timer = require(Packages.Timer)
 
+local RunService = game:GetService("RunService")
 local ServerStorage = game:GetService("ServerStorage")
 local Modules = ServerStorage.Modules
 local BTreeCreator = require(Modules.BehaviorTreeCreator)
@@ -21,6 +22,9 @@ local function fixedUpdate()
     task.desynchronize()
     tree:run(obj)
     task.synchronize()
+
+    -- update state machine
 end
 
-Timer.Simple(dt, fixedUpdate) -- 20hz update schedule
+
+Timer.Simple(dt, fixedUpdate, true, RunService.PreAnimation) -- 20hz update schedule

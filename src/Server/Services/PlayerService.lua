@@ -107,6 +107,7 @@ function PlayerService:KnitStart()
         print(`Created player: {player.UserId} [{entityId}]`)
 
         player.CharacterAdded:Connect(function(character)
+            -- insert model component for player
             local world = Knit.GetService("MatterService"):GetWorld()
             local modelComp = world:get(entityId, Components.Model)
             if modelComp then
@@ -121,6 +122,15 @@ function PlayerService:KnitStart()
                 )
             end
 
+            -- create mob capsule
+            local capsule = ReplicatedStorage.Assets.Models.Capsule:Clone()
+            local rigid = Instance.new("RigidConstraint")
+            rigid.Attachment0 = character:FindFirstChild("RootRigAttachment", true)
+            rigid.Attachment1 = capsule:FindFirstChildOfClass("Attachment")
+            rigid.Parent = capsule
+            capsule.Parent = character
+
+            -- setup character physics controller
             local playerHumanoid = character:WaitForChild("Humanoid", 3)
 
             local animate = character:FindFirstChild("Animate")
@@ -155,7 +165,6 @@ function PlayerService:KnitStart()
         	local waterSensor = Instance.new("BuoyancySensor")
             waterSensor.Parent = character.PrimaryPart
 
-            
             controller.GroundSensor = groundSensor
             controller.ClimbSensor = climbSensor
             controller.RootPart = character.PrimaryPart
@@ -175,6 +184,7 @@ function PlayerService:KnitStart()
                     v.CollisionGroup = "Players" -- // useful for disabling player-player collisions
                 end
             end
+            capsule.CollisionGroup = "MobCapsule"
             
             -- load weapon
             self:LoadWeapon(player)

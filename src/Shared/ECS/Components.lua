@@ -4,7 +4,8 @@ local componentNames = {
     -- SHARED (replicated)
     "Player", -- { userid: number }
     "Enemy", -- {name : string} - name of Enemy type
-    "Health", -- {damage : number} - amount of health an entity has before dying
+    "Health", -- {value : number} - amount of health an entity has before dying
+    "MaxHealth", -- { value : number }
     "Model", -- {value : Instance} - self-explanatory
     "Mob", -- {value : string}
 

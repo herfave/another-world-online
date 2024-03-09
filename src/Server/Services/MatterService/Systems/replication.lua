@@ -12,6 +12,7 @@ local REPLICATED_COMPONENTS = {
 	"Player",
 	"Enemy",
 	"Health",
+	"MaxHealth",
 	"Model",
 	"Mob"
 }

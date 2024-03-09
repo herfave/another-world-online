@@ -25,6 +25,11 @@ return function(world, state)
         local model = baseModel:Clone()
         model.Name = tostring(id)
 
+        local idLabel = model:FindFirstChild("IdLabel", true)
+        if idLabel then
+            idLabel.Text = tostring(id)
+        end
+
         -- clone manager
         local cm: ControllerManager = game.ReplicatedStorage.Assets:FindFirstChild("DefaultManager"):Clone()
         cm.BaseMoveSpeed = 8

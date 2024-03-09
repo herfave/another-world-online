@@ -16,7 +16,7 @@ return function(world)
         cm.MovingDirection = moveDirection
         cm.FacingDirection = lookDirection
 
-        model:SetAttribute("MoveDirection", moveDirection)
-        model:SetAttribute("LookDirection", lookDirection)
+        -- model:SetAttribute("MoveDirection", moveDirection)
+        -- model:SetAttribute("LookDirection", lookDirection)
     end
 end

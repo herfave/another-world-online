@@ -31,6 +31,7 @@ return function(world)
                 value = model
             }))
 
+
             task.spawn(function()
                 task.wait()
                 for _, v in model:GetDescendants() do

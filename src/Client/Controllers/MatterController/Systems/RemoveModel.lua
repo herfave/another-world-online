@@ -9,10 +9,10 @@
 
 local Matter = require(game.ReplicatedStorage.Packages.Matter)
 local Components = require(game.ReplicatedStorage.Shared.ECS.Components)
-local Model = Components.Model
+local MobVisual = Components.MobVisual
 
 local function system(world)
-    for _id, modelRecord in world:queryChanged(Model) do
+    for _id, modelRecord in world:queryChanged(MobVisual) do
         if modelRecord.new == nil then
             if modelRecord.old and modelRecord.old.value then
                 modelRecord.old.value:Destroy()

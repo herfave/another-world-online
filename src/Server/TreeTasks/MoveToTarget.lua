@@ -15,7 +15,7 @@ local STEnemyCommands = SharedTableRegistry:GetSharedTable("ENEMY_COMMANDS")
 local STEnemyRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("ENEMY_REGISTRY")
 
 local AVOID_RADIUS = 7
-local PLAYER_RADIUS = 12
+local PLAYER_RADIUS = 7
 
 local RNG = Random.new()
 

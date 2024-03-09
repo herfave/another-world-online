@@ -20,7 +20,5 @@ return function(world)
         world:insert(_id, health:patch({
             value = health.value - damage.value
         }))
-
-        -- print("Dealt " .. removedDamage.value .. " damage")
     end
 end

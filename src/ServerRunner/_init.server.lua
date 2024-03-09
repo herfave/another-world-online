@@ -5,10 +5,13 @@ PhysicsService:CollisionGroupSetCollidable("Players", "Players", false)
 
 PhysicsService:RegisterCollisionGroup("Mobs")
 PhysicsService:CollisionGroupSetCollidable("Mobs", "Mobs", false)
+PhysicsService:CollisionGroupSetCollidable("Players", "Mobs", false)
+
 
 PhysicsService:RegisterCollisionGroup("MobCapsule")
 PhysicsService:CollisionGroupSetCollidable("MobCapsule", "Default", false)
 PhysicsService:CollisionGroupSetCollidable("MobCapsule", "Mobs", false)
+PhysicsService:CollisionGroupSetCollidable("MobCapsule", "Players", false)
 
 local ServerStorage = game:GetService("ServerStorage")
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
