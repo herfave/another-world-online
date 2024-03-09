@@ -4,11 +4,14 @@ local Health = Components.Health
 local MaxHealth = Components.MaxHealth
 local Model = Components.Model
 return function(world)
-    for id, health, maxHealth, model in world:query(Health, MaxHealth, Model, Mob) do
-        if not model.value then print("no model") continue end
-        local healthDisplay = model.value:FindFirstChild("HealthDisplay")
-        local frame = healthDisplay:FindFirstChild("HealthFrame")
+    for id, healthRecord in world:queryChanged(Health) do
+        if healthRecord.new then
+            local maxHealth, model = world:get(id, Components.MaxHealth, Components.Model)
+            if not model.value then print("no model") continue end
+            local healthDisplay = model.value:FindFirstChild("HealthDisplay")
+            local frame = healthDisplay:FindFirstChild("HealthFrame")
 
-        frame.Size = UDim2.fromScale(health.value / maxHealth.value, 1)
+            frame.Size = UDim2.fromScale(healthRecord.new.value / maxHealth.value, 1)
+        end
     end
 end
