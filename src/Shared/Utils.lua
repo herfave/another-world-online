@@ -235,4 +235,8 @@ function Utils.calculateCustomVelocity(origin, direction,
     return customVelocity
 end
 
+function Utils.sizeToCapsule(size: Vector3)
+    return Vector3.new(size.Y, size.X, size.Z)
+end
+
 return Utils

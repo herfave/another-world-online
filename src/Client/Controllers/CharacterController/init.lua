@@ -13,12 +13,17 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local FSM = require(Shared.FSM)
 local AnimationPlayer = require(Shared.AnimationPlayer)
+local HitboxModule = require(Shared.HitboxModule)
 
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 local Signal = require(Packages.Signal)
 local WaitFor = require(Packages.WaitFor)
 local Janitor = require(Packages.Janitor)
+
+-- FSM callbacks
+local OnAttack = require(script.OnAttack)
+local OnEnterJumping = require(script.OnEnterJumping)
 
 local CharacterController = Knit.CreateController { Name = "CharacterController" }
 
@@ -30,12 +35,7 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
     -- find all sensors
     local groundSensor: ControllerPartSensor = cm.GroundSensor :: ControllerPartSensor
     local climbSensor: ControllerPartSensor = cm.ClimbSensor :: ControllerPartSensor
-    
-    -- Returns true if the controller is assigned, in world, and being simulated
-    local function isControllerActive(controller : ControllerBase)
-        return cm.ActiveController == controller and controller.Active
-    end
-    
+
     local function setController(name: string)
         cm.ActiveController = cm:FindFirstChild(name)
     end
@@ -71,7 +71,7 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
             {
                 name = "attack_end",
                 to = "attack_end",
-                from = "attacking",
+                from = {"attacking", "falling"},
             },
             {
                 name = "stop",
@@ -98,79 +98,20 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
                 setController("GroundController")
                 self:PlayAnimation("Walk")
             end,
-            on_enter_jumping = function(sm, event, from, to)
-                self.JumpCounter += 1
-                primaryPart.AssemblyLinearVelocity = Vector3.new(
-                    primaryPart.AssemblyLinearVelocity.X,
-                    0.001,
-                    primaryPart.AssemblyLinearVelocity.Z
-                )
 
-                local height = 10
-                if self.JumpCounter == 2 then
-                    height = 7.5
-                end
-                local jumpForce = math.sqrt(2 * workspace.Gravity * height) * primaryPart.AssemblyMass
-                -- if self.JumpCounter == 2 then
-                --     jumpForce = 500
-                -- end
-
-                local jumpImpulse = Vector3.new(0, jumpForce, 0)
-                primaryPart:ApplyImpulse(jumpImpulse)
-                setController("AirController")
-
-                -- floor receives equal and opposite force
-                local floor = groundSensor.SensedPart
-                if floor then
-                    floor:ApplyImpulseAtPosition(-jumpImpulse, groundSensor.HitFrame.Position)
-                end
-                self:PlayAnimation("Jump")
-            end,
+            -- jump state transition
+            on_enter_jumping = OnEnterJumping,
             on_fall = function(sm, event, from, to)
                 if from ~= "jumping" then
                     self.JumpCounter = 1
                 end
                 setController("AirController")
+                
                 self:PlayAnimation("Fall")
             end,
-            on_attack = function(sm, event, from, to)
-                -- setup attack name
-                self.AttackCounter += 1
-                local state = "Ground"
-                if from == "jumping" or from == "falling" then
-                   state = "Air"
-                end
-                local animName: string = state .. "Attack" .. tostring(self.AttackCounter)
 
-                -- get attack animation track
-                local track: AnimationTrack = self.Animations:GetTrack(animName)
-                -- allow for next attack earlier than the animation finishing
-                task.delay(track.Length - self.FrameTime * 15, function()
-                    self.AttackCancel = true
-                    sm.attack_end()
-                end)
-
-                -- allow other states to transition out of the attack_end state
-                if self._inAttack then
-                    task.cancel(self._inAttack)
-                end
-                self._inAttack = task.delay(track.Length, function()
-                    self.AttackEnded = true
-                end)
-
-                -- play animation
-                self:PlayAnimation(animName)
-                self.AttackEnded = false
-
-                -- reset attacks, put on cooldown after combo
-                if self.AttackCounter == 5 then
-                    self.AttackCounter = 0 -- reset
-                    self.AttackOnCooldown = true
-                    task.delay(1.1, function()
-                        self.AttackOnCooldown = false
-                    end)
-                end
-            end
+            -- Attack state transition
+            on_attack = OnAttack
         }
     })
     self.StateMachine = stateMachine
@@ -213,7 +154,6 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
 
     -- The Controller determines the type of locomotion and physics behavior
     local function updateStateAndActiveController()
-       
         if not self.AttackEnded then return end
 
         if checkClimbingState() then
@@ -238,20 +178,25 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
     local function updateMovementDirection()
         local humanoid = primaryPart.Parent:FindFirstChild("Humanoid")
         if not humanoid then return end
-        if not table.find(validMovementStates, stateMachine.current) then return end
+        if not table.find(validMovementStates, stateMachine.current) then
+            cm.MovingDirection = Vector3.zero
+            return
+        end
         local dir = humanoid.MoveDirection
-        cm.MovingDirection = dir
         if dir.Magnitude > 0 then
             cm.FacingDirection = dir
         else
             cm.FacingDirection = cm.RootPart.CFrame.LookVector
         end
+
+        cm.MovingDirection = dir
     end
 
     cm:GetPropertyChangedSignal("ActiveController"):Connect(function()
         if cm.ActiveController:IsA("GroundController") then
             self.JumpCounter = 0
         end
+        self.AttackCounter = 0
     end)
 
     self.LastState = stateMachine.current
@@ -260,7 +205,7 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
         updateStateAndActiveController()
         if stateMachine.current ~= self.LastState then
             self.LastState = stateMachine.current
-            print(self.LastState)
+            -- print(`new state: {self.LastState}`)
         end
     end)
 end
@@ -281,6 +226,7 @@ function CharacterController:InitActionListener(humanoid: Humanoid)
     self._janitor:Add(self.AttackEvent:Connect(function()
         if stateMachine.can("attack") and self.AttackCancel and not self.AttackOnCooldown then
             self.AttackCancel = false
+            self.AttackEnded = false
             stateMachine.attack()
         end
     end))
@@ -304,15 +250,27 @@ function CharacterController:LoadAnimations(character: Model)
 end
 
 function CharacterController:KnitStart()
-    LocalPlayer.CharacterAdded:Connect(function(character)
+    Knit.GetService("PlayerService").CharacterLoaded:Connect(function(character)
         self._janitor:Cleanup()
         local humanoid = character:WaitForChild("Humanoid")
-        local controllerManager = character:WaitForChild("CharacterController")
+        local controllerManager = character:FindFirstChildOfClass("ControllerManager")
+
+        local hitbox = HitboxModule.new(character, {
+            OriginPart = character:WaitForChild("Default"),
+            Size = Vector3.new(1, 5, 1),
+            Direction = "Forward"
+        })
+        self._janitor:Add(hitbox.ObjectHit:Connect(function(hit)
+        end))
+        self.Hitbox = hitbox
 
         self:LoadAnimations(character)
         -- TODO: setup FSM so movedirection is only updated in moving states, not attacking states
         self:InitStateMachine(controllerManager)
         self:InitActionListener(humanoid)
+        
+        self.Character = character
+        self.ControllerManager = controllerManager
         self.CharacterAddedEvent:Fire(character) -- // fire when loading the character is complete
 
         self.FrameTime = 1/60

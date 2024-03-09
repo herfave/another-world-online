@@ -61,6 +61,20 @@ function PlayerService.Client:DidLoadReplica(player: Player)
     return true
 end
 
+function PlayerService:LoadWeapon(player: Player)
+    local container = self:GetContainer(player)
+    local weaponTemplate = ReplicatedStorage.Assets.Weapons:FindFirstChild("Default")
+    local newWeapon = weaponTemplate:Clone()
+
+    -- use RigidConstraints
+    local rigid = Instance.new("RigidConstraint")
+    rigid.Attachment1 = newWeapon:FindFirstChild("RightGripAttachment", true)
+    rigid.Attachment0 = player.Character:FindFirstChild("RightGripAttachment", true)
+    rigid.Parent = newWeapon
+    
+    newWeapon.Parent = player.Character
+end
+
 function PlayerService:KnitStart()
     -- instantiate player function
     local function initPlayer(player)
@@ -91,17 +105,19 @@ function PlayerService:KnitStart()
             local health = character:FindFirstChild("Health")
             animate.Enabled = false
             health.Enabled = false
+
             task.wait()
             animate:Destroy()
             health:Destroy()
 
             playerHumanoid.EvaluateStateMachine = false
             -- modify controllers as needed
-            local controller: ControllerManager = ReplicatedStorage.Assets:FindFirstChild("CharacterController"):Clone()
+            local controller: ControllerManager = ReplicatedStorage.Assets:FindFirstChild("DefaultManager"):Clone()
             local groundController: GroundController = controller:FindFirstChild("GroundController")
-            controller.RootPart = character.PrimaryPart
+            local airController: AirController = controller:FindFirstChild("AirController")
             groundController.GroundOffset = playerHumanoid.HipHeight
-        
+            groundController.FrictionWeight = 0.75
+            airController.BalanceRigidityEnabled = true
 
             -- create sensors
             local groundSensor: ControllerPartSensor = Instance.new("ControllerPartSensor")
@@ -120,16 +136,10 @@ function PlayerService:KnitStart()
             
             controller.GroundSensor = groundSensor
             controller.ClimbSensor = climbSensor
+            controller.RootPart = character.PrimaryPart
 
             controller.Parent = character
 
-            -- debug: float vectorforce
-            -- local maxForce = character.PrimaryPart.AssemblyMass * workspace.Gravity * 1.1
-            -- local fakeAttackVector: LinearVelocity = Instance.new("LinearVelocity")
-            -- fakeAttackVector.VectorVelocity = (Vector3.zAxis + Vector3.yAxis).Unit * 16
-            -- fakeAttackVector.MaxForce = maxForce
-            -- fakeAttackVector.Attachment0 = character.PrimaryPart:FindFirstChild("RootRigAttachment")
-            -- fakeAttackVector.Parent = character.PrimaryPart
 
             playerHumanoid.Died:Connect(function()
                 task.delay(Players.RespawnTime, function()
@@ -143,6 +153,9 @@ function PlayerService:KnitStart()
                     v.CollisionGroup = "Players" -- // useful for disabling player-player collisions
                 end
             end
+            
+            -- load weapon
+            self:LoadWeapon(player)
 
             self.CharacterLoadedEvent:Fire(player, character)
             self.Client.CharacterLoaded:Fire(player, character)
@@ -159,15 +172,17 @@ function PlayerService:KnitStart()
         self._players[player] = nil
     end
 
-    Players.PlayerAdded:Connect(initPlayer)
-    Players.PlayerRemoving:Connect(cleanupPlayer)
-
     -- load players that joined before 
     for _, player in Players:GetPlayers() do
         if not self._players[player] then
             initPlayer(player)
         end
     end
+
+    Players.PlayerAdded:Connect(initPlayer)
+    Players.PlayerRemoving:Connect(cleanupPlayer)
+
+    
 end
 
 

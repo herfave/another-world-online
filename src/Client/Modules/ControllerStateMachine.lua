@@ -6,7 +6,7 @@ return function(character)
     local rs = game:GetService("RunService")
     local cas = game:GetService("ContextActionService")
     
-    local cm = character:WaitForChild("CharacterController")
+    local cm = character:WaitForChild("DefaultManager")
     local humanoid = character:WaitForChild("Humanoid")
     
     -- Returns true if the controller is assigned, in world, and being simulated

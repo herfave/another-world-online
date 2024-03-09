@@ -1,6 +1,10 @@
 -- create collision groups here
-game:GetService("PhysicsService"):RegisterCollisionGroup("Players")
-game:GetService("PhysicsService"):CollisionGroupSetCollidable("Players", "Players", false)
+local PhysicsService = game:GetService("PhysicsService")
+PhysicsService:RegisterCollisionGroup("Players")
+PhysicsService:CollisionGroupSetCollidable("Players", "Players", false)
+
+PhysicsService:RegisterCollisionGroup("Mobs")
+PhysicsService:CollisionGroupSetCollidable("Mobs", "Mobs", false)
 
 local ServerStorage = game:GetService("ServerStorage")
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
