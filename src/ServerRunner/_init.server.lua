@@ -9,6 +9,18 @@ PhysicsService:CollisionGroupSetCollidable("Mobs", "Mobs", false)
 local ServerStorage = game:GetService("ServerStorage")
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
 
+
+-- register shared tables
+local SharedTableRegistry = game:GetService("SharedTableRegistry")
+local STMobPosition = SharedTable.new({})
+SharedTableRegistry:SetSharedTable("MOB_POSITION", STMobPosition)
+
+local STEnemyRegistry = SharedTable.new({})
+SharedTableRegistry:SetSharedTable("ENEMY_REGISTRY", STEnemyRegistry)
+
+local STEnemyCommands = SharedTable.new()
+SharedTableRegistry:SetSharedTable("ENEMY_COMMANDS", STEnemyCommands)
+
 Knit.AddServices(ServerStorage:WaitForChild("Services"))
 Knit.Start():catch()
 print('loaded knit server')
