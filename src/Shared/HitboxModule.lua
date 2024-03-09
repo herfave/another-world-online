@@ -40,7 +40,7 @@ function module.new(character, params)
         self.DEBUG_SPHERE.CanCollide = false
         self.DEBUG_SPHERE.CanQuery = false
         self.DEBUG_SPHERE.CanTouch = false
-        self.DEBUG_SPHERE.Transparency = 0.7
+        self.DEBUG_SPHERE.Transparency = 1
         self.DEBUG_SPHERE.Parent = workspace
         self.DEBUG_SPHERE.Anchored = true
         self.DEBUG_SPHERE.Material = Enum.Material.Neon
@@ -58,6 +58,10 @@ function module:Start(getParts: boolean?, endTime: number?)
     self._janitor:Add(function()
         self.Hits = {}
     end)
+
+    if DEBUG_ENABLED then
+        self.DEBUG_SPHERE.Transparency = 0.7
+    end
 
     self.Hits = {self._character, workspace.MobVisuals}
     self._overlapParams.FilterDescendantsInstances = self.Hits
@@ -102,6 +106,9 @@ end
 
 function module:Stop()
     self._janitor:Cleanup()
+    if DEBUG_ENABLED then
+        self.DEBUG_SPHERE.Transparency = 1
+    end
 end
 
 return module

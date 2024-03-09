@@ -15,6 +15,7 @@ local PlayerContainer = require(Modules.PlayerContainer)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Components = require(Shared.ECS.Components)
 
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
@@ -96,9 +97,30 @@ function PlayerService:KnitStart()
         sos.Parent = leaderstats
         --]]
 
-            -- initialize data
-            -- spawn player
+        -- initialize data
+        -- spawn player
+
+        local entityId = Knit.GetService("MatterService"):CreateEntity({
+            Components.Player { userid = player.UserId }
+        })
+
+        print(`Created player: {player.UserId} [{entityId}]`)
+
         player.CharacterAdded:Connect(function(character)
+            local world = Knit.GetService("MatterService"):GetWorld()
+            local modelComp = world:get(entityId, Components.Model)
+            if modelComp then
+                world:insert(
+                    entityId,
+                    modelComp:patch({ value = character })
+                )
+            else
+                world:insert(
+                    entityId,
+                    Components.Model { value = character }
+                )
+            end
+
             local playerHumanoid = character:WaitForChild("Humanoid", 3)
 
             local animate = character:FindFirstChild("Animate")

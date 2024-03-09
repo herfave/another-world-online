@@ -1,6 +1,6 @@
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
 
-function(sm, event, from, to)
+return function(sm, event, from, to)
     local CharacterController = Knit.GetController("CharacterController")
     local cm: ControllerManager = CharacterController.ControllerManager
     local primaryPart: BasePart = CharacterController.Character.PrimaryPart

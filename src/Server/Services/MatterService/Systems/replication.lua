@@ -9,7 +9,7 @@ local useEvent = require(ReplicatedStorage.Packages.Matter).useEvent
 local RemotePacketSizeCounter = require(game.ReplicatedStorage.Packages.RemotePacketSizeCounter)
 
 local REPLICATED_COMPONENTS = {
-	"Owner",
+	"Player",
 	"Enemy",
 	"Health",
 	"Model",

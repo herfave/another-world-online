@@ -28,15 +28,16 @@ end
 
 function task.finish(obj, status)
     if status == SUCCESS then
-        obj._waitTime = 0
+        obj._waitTime = 1
+    
+        local targetPosition = STMobPosition[obj.TargetEntityId]
+        STEnemyCommands[obj.EntityId] = {
+            x = 0,
+            y = 0,
+            z = 0,
+            fa = targetPosition or Vector3.zero
+        }
     end
-    local targetPosition = STMobPosition[obj.TargetEntityId]
-    STEnemyCommands[obj.EntityId] = {
-        x = 0,
-        y = 0,
-        z = 0,
-        fa = targetPosition or Vector3.zero
-    }
 end
 
 function task.run(obj)
@@ -49,7 +50,7 @@ function task.run(obj)
     
     local entityId = obj.EntityId
     -- print(obj)
-    if not obj.TargetEntityId then return RUNNING end
+    if not obj.TargetEntityId then return FAIL end
 
     local targetPosition = STMobPosition[obj.TargetEntityId]
     local currentPosition = STMobPosition[entityId]

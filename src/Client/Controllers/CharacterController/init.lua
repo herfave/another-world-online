@@ -261,6 +261,7 @@ function CharacterController:KnitStart()
             Direction = "Forward"
         })
         self._janitor:Add(hitbox.ObjectHit:Connect(function(hit)
+            print("HIT:", hit)
         end))
         self.Hitbox = hitbox
 

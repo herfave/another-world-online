@@ -23,6 +23,16 @@ return function(world, state)
         local baseModel = models:FindFirstChild("MobBase")
         if not baseModel then continue end
         local model = baseModel:Clone()
+        model.Name = tostring(id)
+
+        -- clone manager
+        local cm: ControllerManager = game.ReplicatedStorage.Assets:FindFirstChild("DefaultManager"):Clone()
+        cm.BaseMoveSpeed = 8
+        cm.GroundSensor = model:FindFirstChild("GroundSensor", true)
+        cm.ClimbSensor = model:FindFirstChild("ClimbSensor", true)
+        cm.RootPart = model.PrimaryPart
+        cm.GroundController.GroundOffset = 2
+        cm.Parent = model
 
         model:SetAttribute("Jump", false)
         model:SetAttribute("MoveDirection", Vector3.zero)

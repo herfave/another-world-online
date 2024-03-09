@@ -21,6 +21,8 @@ local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 local Matter = require(Packages.Matter)
 
+local SharedTableRegistry = game:GetService("SharedTableRegistry")
+local STMobPosition = SharedTableRegistry:GetSharedTable("MOB_POSITION")
 
 local MatterService = Knit.CreateService({
     Name = "MatterService";

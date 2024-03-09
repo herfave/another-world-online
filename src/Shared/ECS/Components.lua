@@ -2,12 +2,11 @@ local Matter = require(game.ReplicatedStorage.Packages.Matter)
 
 local componentNames = {
     -- SHARED (replicated)
-    "Owner", -- { userid : number } - UserId of the player that owns this entity, typically towers
+    "Player", -- { userid: number }
     "Enemy", -- {name : string} - name of Enemy type
     "Health", -- {damage : number} - amount of health an entity has before dying
     "Model", -- {value : Instance} - self-explanatory
     "Mob", -- {value : string}
-    "Enemy", -- { value : string }
 
     "ATK", -- {value: number} - enemy damage to nexus
     "DamageMod", -- {value : number} - modifier to damage, starts at 0

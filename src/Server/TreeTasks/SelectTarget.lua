@@ -14,8 +14,6 @@ local SharedTableUtil = require(ServerStorage.Modules.SharedTableUtil)
 
 local STMobPosition = game:GetService("SharedTableRegistry"):GetSharedTable("MOB_POSITION")
 local STEnemyRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("ENEMY_REGISTRY")
-local userId = script.Parent:GetAttribute("UserId")
-
 
 function task.start(obj)
 end
