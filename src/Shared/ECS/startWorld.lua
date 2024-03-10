@@ -4,6 +4,8 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = ReplicatedStorage.Packages
+local Signal = require(Packages.Signal)
+local Timer = require(Packages.Timer)
 local Matter = require(ReplicatedStorage.Packages.Matter)
 local Plasma = require(Packages.Plasma)
 local HotReloader = require(Packages.Rewire).HotReloader
@@ -85,10 +87,13 @@ local function start(containers)
 	debugger:autoInitialize(loop)
 
 	-- Begin running our systems
-
+	local step = Signal.new()
+	local _event = Timer.Simple(1/20, function()
+		step:Fire()
+	end, true, RunService.PreAnimation)
 	loop:begin({
-		default = RunService.PreSimulation,
-		Stepped = RunService.Stepped,
+		default = RunService.PreAnimation,
+		MoveStep = step,
 	})
 
 	if RunService:IsClient() then
