@@ -51,7 +51,24 @@ function MobService:CreateMob(): number
     local actor = self:CreateActor(`{entityId}_TreeThink`, "EnemyAI")
     actor:SetAttribute("EntityId", entityId)
     actor:FindFirstChild("Script").Enabled = true
+    actor:SetAttribute("AttackCounter", 0)
     self._mobThinks[entityId] = actor
+
+    -- setup listeners for state changes via attributes
+    actor:GetAttributeChangedSignal("Attack"):Connect(function()
+        local didAttack = actor:GetAttribute("Attack")
+        local counter = actor:GetAttribute("AttackCounter")
+        if didAttack then
+            counter += 1
+
+            Knit.GetService("CombatService"):MobAttack(entityId, "M1-" .. tostring(counter))
+
+            if counter == 5 then
+                counter = 0
+            end
+            actor:SetAttribute("AttackCounter", counter)
+        end
+    end)
 
     return entityId
 end
@@ -73,7 +90,7 @@ function MobService:DespawnMob(entityId: number)
 end
 
 function MobService:KnitStart()
-    for i = 1, 50 do
+    for i = 1, 5 do
         self:CreateMob()
         task.wait(0.2)
     end

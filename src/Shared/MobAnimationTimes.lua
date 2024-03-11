@@ -1,0 +1,18 @@
+local Promise = require(game.ReplicatedStorage.Packages.Promise)
+local AnimationClipProvider = game:GetService("AnimationClipProvider")
+local animations = game.ReplicatedStorage.Assets.Animations.MobAttacks
+
+local Utils = require(game.ReplicatedStorage.Shared.Utils)
+
+local data = {}
+for _, v in animations:GetDescendants() do
+    if v:IsA("Animation") then
+        Utils.getAnimationTimes(v.AnimationId, "Attack")
+        :andThen(function(times)
+            data[v.Name] = times
+            print(v.Name, data[v.Name])
+        end)
+    end
+end
+
+return data

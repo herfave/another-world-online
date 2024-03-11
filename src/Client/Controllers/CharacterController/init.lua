@@ -24,7 +24,7 @@ local Janitor = require(Packages.Janitor)
 
 -- Comm setup
 local ClientComm = require(Packages.Comm).ClientComm
-local CombatComm = ClientComm.new(ReplicatedStorage:WaitForChild("UnreliableComm"), true, "CombatComm")
+local CombatComm = ClientComm.new(ReplicatedStorage:WaitForChild("Comms"), true, "CombatComm")
 local SendHitRequest = CombatComm:GetSignal("SendHitRequest")
 
 -- FSM callbacks
@@ -260,7 +260,7 @@ function CharacterController:LoadAnimations(character: Model)
     local animator = character:FindFirstChild("Animator", true)
     self.Animations = AnimationPlayer.new(animator)
     -- load animations here
-    local animations = ReplicatedStorage.Assets.Animations:GetChildren()
+    local animations = ReplicatedStorage.Assets.Animations.Player:GetChildren()
     for _, anim in animations do
         self.Animations:WithAnimation(anim)
     end

@@ -21,6 +21,7 @@ local componentNames = {
 
     -- CLIENT ONLY
     "MobVisual", -- { value : Model }
+    "MobAnimations" -- {player : AnimationPlayer}
 }
 
 -- value names to get serialized

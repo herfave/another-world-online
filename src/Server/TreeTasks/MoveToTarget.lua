@@ -108,7 +108,7 @@ function task.run(obj)
     if distanceFromTarget < PLAYER_RADIUS and closest > AVOID_RADIUS then
         return SUCCESS
     end
-
+    obj.state = "Moving"
     return RUNNING
 end
 return task

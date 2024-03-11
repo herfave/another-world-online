@@ -10,25 +10,39 @@
 
 ]]
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local Matter = require(game.ReplicatedStorage.Packages.Matter)
 local Components = require(game.ReplicatedStorage.Shared.ECS.Components)
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
+local AnimationPlayer = require(ReplicatedStorage.Shared.AnimationPlayer)
 
 local Model = Components.Model
 local Mob = Components.Mob
 local MobVisual = Components.MobVisual
+local MobAnimations = Components.MobAnimations
 
-local models = game.ReplicatedStorage.Assets.Models
+local models = ReplicatedStorage.Assets.Models
 
 return function(world)
         for id, entity in world:query(Mob, Model):without(MobVisual) do
             local baseModel = models:FindFirstChild(entity.value)
             if not baseModel then continue end
             local model = baseModel:Clone()
+            model.Name = tostring(id)
             model.Parent = workspace.MobVisuals
             world:insert(id, MobVisual({
                 value = model
+            }))
+
+            -- load animations onto model
+            local player = AnimationPlayer.new(model:FindFirstChild("Animator", true))
+            local animations = ReplicatedStorage.Assets.Animations.MobAttacks:GetChildren()
+            for _, anim in animations do
+                player:WithAnimation(anim)
+            end
+            world:insert(id, MobAnimations({
+                player = player
             }))
 
 

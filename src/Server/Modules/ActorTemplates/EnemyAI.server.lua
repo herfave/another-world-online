@@ -16,6 +16,7 @@ local obj = {
     UserId = userId,
     EntityId = entityId,
     _deltaTime = dt,
+    _actor = script.Parent,
 }
 
 local function fixedUpdate()
@@ -23,7 +24,15 @@ local function fixedUpdate()
     tree:run(obj)
     task.synchronize()
 
-    -- update state machine
+    -- update state
+    if obj.state == "Attack" and not script.Parent:GetAttribute("Attack") then
+        script.Parent:SetAttribute("Attack", true)
+        task.delay(0.7, function()
+            script.Parent:SetAttribute("Attack", false)
+        end)
+    elseif obj.state ~= "Attack" and script.Parent:GetAttribute("Attack") then
+        script.Parent:SetAttribute("Attack", false)
+    end
 end
 
 

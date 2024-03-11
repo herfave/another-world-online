@@ -2,6 +2,9 @@ local RunService = game:GetService("RunService")
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Promise = require(ReplicatedStorage.Packages.Promise)
+
+local AnimationClipProvider = game:GetService("AnimationClipProvider")
 
 local Utils = {}
 
@@ -237,6 +240,23 @@ end
 
 function Utils.sizeToCapsule(size: Vector3)
     return Vector3.new(size.Y, size.X, size.Z)
+end
+
+function Utils.getAnimationTimes(animationId: number, marker: string)
+    return Promise.try(function()
+        return AnimationClipProvider:GetAnimationClipAsync(animationId)
+    end)
+    :andThen(function(kfSequence)
+        local data = {}
+        if kfSequence:IsA("KeyframeSequence") then
+            for _, kf in kfSequence:GetChildren() do
+                if kf:FindFirstChild(marker) then
+                    table.insert(data, kf.Time)
+                end
+            end
+        end
+        return data
+    end)
 end
 
 return Utils
