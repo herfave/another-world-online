@@ -16,6 +16,7 @@ local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 local TableUtil = require(Packages.TableUtil)
 local Promise = require(Packages.Promise)
+local Matter = require(Packages.Matter)
 
 local MatterController = Knit.CreateController({ Name = "MatterController" })  
 
@@ -23,7 +24,7 @@ local MatterController = Knit.CreateController({ Name = "MatterController" })
 -- These functions are important because there can be a desync between item ids when replicating entities across the
 -- server and client "worlds". Use them to synchronize changes, especially when sending changes to the server
 -- Gets the entity id of the client world for a given server entity
-function MatterController:GetClientEntityId(serverEntityId: number | string)
+function MatterController:GetClientEntityId(serverEntityId: number | string): number
     if typeof(serverEntityId) == "number" then
         serverEntityId = tostring(serverEntityId)
     end
@@ -31,7 +32,7 @@ function MatterController:GetClientEntityId(serverEntityId: number | string)
 end
 
 -- Inverse of the above
-function MatterController:GetServerEntityId(clientEntityId: number)
+function MatterController:GetServerEntityId(clientEntityId: number): number | nil
     for serverEntityId, clientId in self._entityIdMap do
         if clientId == clientEntityId then
             return tonumber(serverEntityId)
@@ -43,7 +44,7 @@ end
 
 
 -- Gets the current running world on the client
-function MatterController:GetWorld()
+function MatterController:GetWorld(): Matter.World
     return self._world
 end
 

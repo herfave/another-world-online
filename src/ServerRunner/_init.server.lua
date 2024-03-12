@@ -28,6 +28,9 @@ SharedTableRegistry:SetSharedTable("ENEMY_REGISTRY", STEnemyRegistry)
 local STEnemyCommands = SharedTable.new()
 SharedTableRegistry:SetSharedTable("ENEMY_COMMANDS", STEnemyCommands)
 
+local STPlayerRegistry = SharedTable.new()
+SharedTableRegistry:SetSharedTable("PLAYER_REGISTRY", STPlayerRegistry)
+
 Knit.AddServices(ServerStorage:WaitForChild("Services"))
 Knit.Start():catch()
 print('loaded knit server')

@@ -16,6 +16,7 @@ local STMobPosition = game:GetService("SharedTableRegistry"):GetSharedTable("MOB
 local STEnemyRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("ENEMY_REGISTRY")
 
 function task.start(obj)
+    -- print(`[{obj.EntityId}] Started SelectTarget`)
 end
 
 function task.finish(obj, status)

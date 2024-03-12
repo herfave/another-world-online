@@ -20,14 +20,11 @@ end
 function module.new(character, params)
     local self = {
         OriginPart = params.OriginPart,
-        Size = params.Size,
         CastType = params.CastType or "Blockcast",
         ObjectHit = Signal.new(),
         _janitor = Janitor.new(),
         _character = character,
         Hits = {},
-        Direction = params.Direction == "Forward" and params.OriginPart.CFrame.LookVector
-            or params.OriginPart.CFrame.RightVector
     }
 
     self._overlapParams = OverlapParams.new()
@@ -44,8 +41,7 @@ function module.new(character, params)
         self.DEBUG_SPHERE.Parent = workspace
         self.DEBUG_SPHERE.Anchored = true
         self.DEBUG_SPHERE.Material = Enum.Material.Neon
-        self.DEBUG_SPHERE.Size = params.Size.Magnitude * Vector3.one
-        self.DEBUG_SPHERE.Shape = Enum.PartType.Ball
+        self.DEBUG_SPHERE.Size = params.OriginPart.Size * 1.1
     end
 
     setmetatable(self, module)
@@ -67,9 +63,9 @@ function module:Start(getParts: boolean?, endTime: number?)
     self._overlapParams.FilterDescendantsInstances = self.Hits
    
     self._janitor:Add(RunService.PreAnimation:Connect(function(dt)
-        local parts = workspace:GetPartBoundsInRadius(
-            self.OriginPart.Position,
-            self.Size.Magnitude / 2,
+        local parts = workspace:GetPartBoundsInBox(
+            self.OriginPart.CFrame,
+            self.OriginPart.Size * 1.1,
             self._overlapParams
         )
 

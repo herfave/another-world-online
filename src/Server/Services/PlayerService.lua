@@ -5,6 +5,7 @@
 
     Description: Manage player spawning and interactions with the server involving data
 ]]
+local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local PhysicsService = game:GetService("PhysicsService")
 
@@ -21,6 +22,8 @@ local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 local Signal = require(Packages.Signal)
 local Promise = require(Packages.Promise)
+
+local STPlayerRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("PLAYER_REGISTRY")
 
 local PlayerService = Knit.CreateService {
     Name = "PlayerService";
@@ -76,6 +79,22 @@ function PlayerService:LoadWeapon(player: Player)
     newWeapon.Parent = player.Character
 end
 
+--[=[
+    Change how long between when an attack token is returned by enemy actors
+    for use in another attack
+]=]
+function PlayerService:AdjustEnemyAttackDelay(player: Player, freq: number)
+    player:SetAttribute("EnemyAttackDelay", freq)
+end
+
+--[=[
+    Change how many attackers can attack the player at once i.e. how many tokens are available
+    Useful for moves that use up a lot of tokens
+]=]
+function PlayerService:AdjustAttackTokens(player: Player, attackers: number)
+    player:SetAttribute("AttackTokens", attackers)
+end
+
 function PlayerService:KnitStart()
     -- instantiate player function
     local function initPlayer(player)
@@ -105,6 +124,39 @@ function PlayerService:KnitStart()
         })
 
         print(`Created player: {player.UserId} [{entityId}]`)
+
+        -- create battle circle invocation
+        self:AdjustAttackTokens(player, 4)
+        local attackToken = Instance.new("BindableEvent")
+        local checkedOutTokens = {}
+        attackToken.Name = "InvokeAttackToken"
+        attackToken.Event:Connect(function(enemyId: number, isCheckingOut: boolean, amount: number | nil)
+            amount = amount or 1
+            local attackTokens = player:GetAttribute("AttackTokens")
+            -- consume 1 token for this call
+            if isCheckingOut then
+                if #checkedOutTokens < attackTokens and attackTokens - #checkedOutTokens >= amount then
+                    for i = 1, amount do
+                        table.insert(checkedOutTokens, enemyId)
+                    end
+                end
+            -- return a token for future use
+            else
+                for i = 1, amount do
+                    local index = table.find(checkedOutTokens, enemyId)
+                    if index then
+                        table.remove(checkedOutTokens, index)
+                    end
+                end
+            end
+
+            -- encode state to player attributes so actors can read it
+            local t = HttpService:JSONEncode(checkedOutTokens)
+            player:SetAttribute("HasAttackToken", t)
+        end)
+        attackToken.Parent = player
+
+        STPlayerRegistry[entityId] = player.UserId
 
         player.CharacterAdded:Connect(function(character)
             -- insert model component for player
@@ -170,7 +222,6 @@ function PlayerService:KnitStart()
             controller.RootPart = character.PrimaryPart
 
             controller.Parent = character
-
 
             playerHumanoid.Died:Connect(function()
                 task.delay(Players.RespawnTime, function()

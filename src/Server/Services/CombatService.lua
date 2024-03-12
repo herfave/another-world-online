@@ -35,15 +35,20 @@ function CombatService:MobAttack(entityId: number, attackType: string)
     local attackTimes = MobAnimationTimes[mob.value .. attackType]
 
     -- send attack to client for animations
-    self.SendMobAttack:FireAll(entityId, attackType)
+    self.SendMobAttack:FireFilter(function(player)
+        local character = player.Character
+        if not character then return false end
 
-    -- late attack based off attack data + 10% delay
-    for i, t in attackTimes do
-        -- store attacks and disregard client hits
-        task.delay(t * 3, function()
-            print("hit", i)
-        end)
-    end
+        local serverModel = world:get(entityId, Components.Model)
+        if not serverModel.value then return false end
+        if not serverModel.value:IsA("Model") then return false end
+
+        -- check distance
+        local dist = (character:GetPivot().Position - serverModel.value:GetPivot().Position).Magnitude
+        return dist <= 100
+    end, entityId, attackType)
+
+    
 end
 
 --[=[

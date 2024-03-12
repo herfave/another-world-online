@@ -275,8 +275,6 @@ function CharacterController:KnitStart()
         -- setup basic attack hitbox
         local hitbox = HitboxModule.new(character, {
             OriginPart = character:WaitForChild("Default"),
-            Size = Vector3.new(1, 5, 1),
-            Direction = "Forward"
         })
         self._janitor:Add(hitbox.ObjectHit:Connect(function(hit: Model)
             -- send hit request

@@ -72,14 +72,14 @@ function CLASS.new()
 				
 				DefaultShoulder = {
 					FieldOfView = 70,
-					Offset = Vector3.new(2.5, 2.5, 8),
+					Offset = Vector3.new(2.5, 2.5, 12),
 					Sensitivity = 3,
 					LerpSpeed = 0.5
 				},
 				
 				ZoomedShoulder = {
-					FieldOfView = 40,
-					Offset = Vector3.new(1.5, 1.5, 6),
+					FieldOfView = 45,
+					Offset = Vector3.new(1.5, 1.5, 8),
 					Sensitivity = 1.5,
 					LerpSpeed = 0.5
 				}

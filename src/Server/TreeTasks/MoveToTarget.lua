@@ -15,11 +15,14 @@ local STEnemyCommands = SharedTableRegistry:GetSharedTable("ENEMY_COMMANDS")
 local STEnemyRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("ENEMY_REGISTRY")
 
 local AVOID_RADIUS = 7
-local PLAYER_RADIUS = 7
+local PLAYER_RADIUS = 12
+local ATTACK_RADIUS = 5
 
 local RNG = Random.new()
 
 function task.start(obj)
+    -- print(`[{obj.EntityId}] MoveToTarget`)
+
     repeat
         obj.StrafeDirection = RNG:NextInteger(-1, 1)
     until obj.StrafeDirection ~= 0
@@ -47,7 +50,7 @@ function task.run(obj)
         obj._lastStrafe = RNG:NextInteger(3, 10)
         obj.StrafeDirection = -obj.StrafeDirection
     end
-    
+
     local entityId = obj.EntityId
     -- print(obj)
     if not obj.TargetEntityId then return FAIL end
@@ -88,27 +91,32 @@ function task.run(obj)
         end
     end
 
-    
-
+    local radius = obj._hasAttackToken and ATTACK_RADIUS or PLAYER_RADIUS
+    print(radius, distanceFromTarget)
     -- path towards target
-    if distanceFromTarget > PLAYER_RADIUS then
+    if distanceFromTarget >= radius then
         local unit = moveVec.Unit
         command.x = unit.X
         command.z = unit.Z
-    end
-
-    if distanceFromTarget < PLAYER_RADIUS * 0.8 then
+    elseif distanceFromTarget < radius - 0.1 then
         -- moveVec += -direction.Unit
         local unit = -direction.Unit
         command.x = unit.X
         command.z = unit.Z
+        STEnemyCommands[entityId] = command
+        return RUNNING
     end
 
     STEnemyCommands[entityId] = command
-    if distanceFromTarget < PLAYER_RADIUS and closest > AVOID_RADIUS then
+    if distanceFromTarget <= radius then
         return SUCCESS
     end
     obj.state = "Moving"
+
+    if obj.RequestAttackCooldown > 0 then
+        obj.RequestAttackCooldown -= obj._deltaTime
+    end
+
     return RUNNING
 end
 return task

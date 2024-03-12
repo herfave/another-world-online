@@ -14,6 +14,7 @@ local Components = require(Shared.ECS.Components)
 
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
+local Matter = require(Packages.Matter)
 
 local MobService = Knit.CreateService({
     Name = "MobService";
@@ -74,7 +75,7 @@ function MobService:CreateMob(): number
 end
 
 function MobService:DespawnMob(entityId: number)
-    local world = Knit.GetService("MatterService"):GetWorld()
+    local world: Matter.World = Knit.GetService("MatterService"):GetWorld()
     if world:contains(entityId) then
 
         if self._mobThinks[entityId] then
@@ -90,12 +91,11 @@ function MobService:DespawnMob(entityId: number)
 end
 
 function MobService:KnitStart()
-    for i = 1, 5 do
+    for i = 1, 3 do
         self:CreateMob()
         task.wait(0.2)
     end
 end
-
 
 function MobService:KnitInit()
     self._mobThinks = {}

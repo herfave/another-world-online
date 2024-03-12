@@ -12,19 +12,21 @@
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
-local Matter = require(game.ReplicatedStorage.Packages.Matter)
-local Components = require(game.ReplicatedStorage.Shared.ECS.Components)
-local Knit = require(game.ReplicatedStorage.Packages.Knit)
+local Components = require(ReplicatedStorage.Shared.ECS.Components)
+local Matter = require(ReplicatedStorage.Packages.Matter)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 local AnimationPlayer = require(ReplicatedStorage.Shared.AnimationPlayer)
+local HitboxModule = require(ReplicatedStorage.Shared.HitboxModule)
 
 local Model = Components.Model
 local Mob = Components.Mob
 local MobVisual = Components.MobVisual
 local MobAnimations = Components.MobAnimations
+local MobHitboxes = Components.MobHitboxes
 
 local models = ReplicatedStorage.Assets.Models
 
-return function(world)
+return function(world: Matter.World)
         for id, entity in world:query(Mob, Model):without(MobVisual) do
             local baseModel = models:FindFirstChild(entity.value)
             if not baseModel then continue end
@@ -43,6 +45,20 @@ return function(world)
             end
             world:insert(id, MobAnimations({
                 player = player
+            }))
+
+            -- load hitboxes
+            local hitboxes = {}
+            for _, part in model:GetChildren() do
+                if part:IsA("BasePart") and part:HasTag("_Hitbox") then
+                    local newHitbox = HitboxModule.new(model, {
+                        OriginPart = part
+                    })
+                    hitboxes[part.Name] = newHitbox
+                end
+            end
+            world:insert(id, MobHitboxes({
+                hitboxes = hitboxes
             }))
 
 

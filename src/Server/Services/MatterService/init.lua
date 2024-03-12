@@ -77,12 +77,12 @@ function MatterService:ResetWorld()
     end
 end
 
-function MatterService:GetWorld()
+function MatterService:GetWorld(): Matter.World
     return self._world
 end
 
 function MatterService:KnitStart()
-    local world, state = startWorld({
+    local world: Matter.World, state = startWorld({
         script.Systems,
         Shared.ECS.Systems
     })

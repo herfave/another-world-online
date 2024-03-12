@@ -17,21 +17,27 @@ local obj = {
     EntityId = entityId,
     _deltaTime = dt,
     _actor = script.Parent,
+    RequestAttackCooldown = 0,
 }
-
+local thread
 local function fixedUpdate()
     task.desynchronize()
     tree:run(obj)
     task.synchronize()
 
     -- update state
-    if obj.state == "Attack" and not script.Parent:GetAttribute("Attack") then
+    if obj.state == "Attack" and not script.Parent:GetAttribute("Attack") and obj._hasAttackToken then
+        obj._hasAttackToken = false
         script.Parent:SetAttribute("Attack", true)
-        task.delay(0.7, function()
+        thread = task.delay(0.7, function()
             script.Parent:SetAttribute("Attack", false)
         end)
     elseif obj.state ~= "Attack" and script.Parent:GetAttribute("Attack") then
         script.Parent:SetAttribute("Attack", false)
+        if thread then
+            task.cancel(thread)
+            thread = nil
+        end
     end
 end
 
