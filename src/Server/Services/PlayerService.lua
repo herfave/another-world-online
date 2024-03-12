@@ -124,6 +124,7 @@ function PlayerService:KnitStart()
         })
 
         print(`Created player: {player.UserId} [{entityId}]`)
+        newContainer.EntityId = entityId
 
         -- create battle circle invocation
         self:AdjustAttackTokens(player, 4)
@@ -223,7 +224,15 @@ function PlayerService:KnitStart()
 
             controller.Parent = character
 
+            playerHumanoid:GetPropertyChangedSignal("Health"):Connect(function()
+                if playerHumanoid.Health <= 0 then
+                    playerHumanoid:ChangeState(Enum.HumanoidStateType.Dead)
+                end
+            end)
             playerHumanoid.Died:Connect(function()
+                print("oh snap")
+                player.Character = nil
+                character:Destroy()
                 task.delay(Players.RespawnTime, function()
                     player:LoadCharacter()
                 end)

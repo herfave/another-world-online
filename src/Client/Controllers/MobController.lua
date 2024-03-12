@@ -25,7 +25,6 @@ local SendMobAttack = CombatComm:GetSignal("SendMobAttack")
 
 local MobController = Knit.CreateController({ Name = "MobController" })
 
-
 function MobController:KnitStart()
     SendMobAttack:Connect(function(entityId: number, attackType: string, _attackId )
         local clientEntityId = Knit.GetController("MatterController"):GetClientEntityId(entityId)
@@ -43,6 +42,7 @@ function MobController:KnitStart()
                         if Players:GetPlayerFromCharacter(model) == LocalPlayer then
                             -- fire event that they were hit by a mob
                             print(`hit {model.Name} with {hbName}`)
+                            Knit.GetService("CombatService").MobHitPlayer:Fire(entityId)
                         end
                     end))
                 end

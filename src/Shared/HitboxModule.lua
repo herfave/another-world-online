@@ -17,10 +17,17 @@ if DEBUG_ENABLED then
     CastVisual = CastVisuals.new(Color3.new(1,0,0), workspace)
 end
 
+export type Hitbox = {
+    OriginPart: BasePart,
+    ObjectHit: Signal.Signal,
+    _janitor: Janitor.Janitor,
+    _character: Model,
+    Hits: {Instance}
+}
+
 function module.new(character, params)
     local self = {
         OriginPart = params.OriginPart,
-        CastType = params.CastType or "Blockcast",
         ObjectHit = Signal.new(),
         _janitor = Janitor.new(),
         _character = character,
@@ -32,20 +39,27 @@ function module.new(character, params)
     self._overlapParams.MaxParts = 10
 
     if DEBUG_ENABLED then
-        self.DEBUG_SPHERE = Instance.new("Part")
-        self.DEBUG_SPHERE.Color = Color3.fromRGB(255, 0, 0)
-        self.DEBUG_SPHERE.CanCollide = false
-        self.DEBUG_SPHERE.CanQuery = false
-        self.DEBUG_SPHERE.CanTouch = false
-        self.DEBUG_SPHERE.Transparency = 1
-        self.DEBUG_SPHERE.Parent = workspace
-        self.DEBUG_SPHERE.Anchored = true
-        self.DEBUG_SPHERE.Material = Enum.Material.Neon
-        self.DEBUG_SPHERE.Size = params.OriginPart.Size * 1.1
+        self.DEBUG_PART = Instance.new("Part")
+        self.DEBUG_PART.Color = Color3.fromRGB(255, 0, 0)
+        self.DEBUG_PART.CanCollide = false
+        self.DEBUG_PART.CanQuery = false
+        self.DEBUG_PART.CanTouch = false
+        self.DEBUG_PART.Transparency = 1
+        self.DEBUG_PART.Parent = workspace
+        self.DEBUG_PART.Anchored = true
+        self.DEBUG_PART.Material = Enum.Material.Neon
+        self.DEBUG_PART.Size = params.OriginPart.Size * 1.1
+        self._janitor:Add(self.DEBUG_PART)
     end
 
     setmetatable(self, module)
     return self
+end
+
+function module:Destroy()
+    self._janitor:Destroy()
+    self.ObjectHit:Destroy()
+    self = nil
 end
 
 function module:Start(getParts: boolean?, endTime: number?)
@@ -56,7 +70,7 @@ function module:Start(getParts: boolean?, endTime: number?)
     end)
 
     if DEBUG_ENABLED then
-        self.DEBUG_SPHERE.Transparency = 0.7
+        self.DEBUG_PART.Transparency = 0.7
     end
 
     self.Hits = {self._character, workspace.MobVisuals}
@@ -89,7 +103,7 @@ function module:Start(getParts: boolean?, endTime: number?)
         end
 
         if DEBUG_ENABLED then
-            self.DEBUG_SPHERE.CFrame = self.OriginPart.CFrame
+            self.DEBUG_PART.CFrame = self.OriginPart.CFrame
         end
     end))
 
@@ -103,7 +117,7 @@ end
 function module:Stop()
     self._janitor:Cleanup()
     if DEBUG_ENABLED then
-        self.DEBUG_SPHERE.Transparency = 1
+        self.DEBUG_PART.Transparency = 1
     end
 end
 

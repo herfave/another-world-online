@@ -139,11 +139,12 @@ function CLASS:SetCharacterAlignment(aligned)
 	
 	local character = LOCAL_PLAYER.Character
 	local humanoid = (character ~= nil) and (character:FindFirstChild("Humanoid"))
-
-	humanoid.AutoRotate = not aligned
 	self.IsCharacterAligned = aligned
 	self.CharacterAlignmentChangedEvent:Fire(aligned)
-end
+	
+	if not humanoid then return end
+	humanoid.AutoRotate = not aligned
+end 
 
 function CLASS:SetMouseStep(steppedIn)
 	assert(steppedIn ~= nil, "OTS Camera System Argument Error: Argument 1 nil or missing")
@@ -217,6 +218,10 @@ function CLASS:Update()
 	
 	local character = LOCAL_PLAYER.Character
 	local humanoidRootPart = (character ~= nil) and (character:FindFirstChild("HumanoidRootPart"))
+	if humanoidRootPart == false then
+		self:Disable()
+		return
+	end
 	if (humanoidRootPart ~= nil) then
 		
 		--// Lerp field of view //--

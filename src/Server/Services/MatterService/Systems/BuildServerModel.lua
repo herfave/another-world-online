@@ -32,7 +32,7 @@ return function(world, state)
 
         -- clone manager
         local cm: ControllerManager = game.ReplicatedStorage.Assets:FindFirstChild("DefaultManager"):Clone()
-        cm.BaseMoveSpeed = 8
+        cm.BaseMoveSpeed = 6
         cm.GroundSensor = model:FindFirstChild("GroundSensor", true)
         cm.ClimbSensor = model:FindFirstChild("ClimbSensor", true)
         cm.RootPart = model.PrimaryPart

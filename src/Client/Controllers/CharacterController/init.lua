@@ -207,14 +207,14 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
     end)
 
     self.LastState = stateMachine.current
-    return RunService.PreAnimation:Connect(function()
+    self._janitor:Add(RunService.PreAnimation:Connect(function()
         updateMovementDirection()
         updateStateAndActiveController()
         if stateMachine.current ~= self.LastState then
             self.LastState = stateMachine.current
             -- print(`new state: {self.LastState}`)
         end
-    end)
+    end))
 end
 --[=[
     Starts listening to certain events that act on the state machine or ControllerManager
@@ -272,6 +272,12 @@ function CharacterController:KnitStart()
         local humanoid = character:WaitForChild("Humanoid")
         local controllerManager = character:FindFirstChildOfClass("ControllerManager")
 
+        character.Destroying:Connect(function()
+            print("DIED")
+            OTSCamera:Disable()
+            self._janitor:Cleanup()
+        end)
+
         -- setup basic attack hitbox
         local hitbox = HitboxModule.new(character, {
             OriginPart = character:WaitForChild("Default"),
@@ -283,7 +289,6 @@ function CharacterController:KnitStart()
         self.Hitbox = hitbox
 
         self:LoadAnimations(character)
-        -- TODO: setup FSM so movedirection is only updated in moving states, not attacking states
         self:InitStateMachine(controllerManager)
         self:InitActionListener(humanoid)
         
@@ -297,9 +302,6 @@ function CharacterController:KnitStart()
         end)
 
         OTSCamera:Enable()
-        self._janitor:Add(function()
-            OTSCamera:Disable()
-        end)
     end)
 end
 

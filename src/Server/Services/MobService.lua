@@ -45,6 +45,7 @@ function MobService:CreateMob(): number
         Components.Mob { value = "TestMob" },
         Components.MaxHealth { value = 100 },
         Components.Health { value = 100 },
+        Components.Enemy { value = true },
     })
 
     SharedTableUtil.insert(STEnemyRegistry, entityId)

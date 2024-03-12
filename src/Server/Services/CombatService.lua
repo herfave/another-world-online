@@ -13,12 +13,16 @@ local Components = require(Shared.ECS.Components)
 local MobAnimationTimes = require(Shared.MobAnimationTimes)
 
 local Packages = ReplicatedStorage.Packages
+local Matter = require(Packages.Matter)
 local Knit = require(Packages.Knit)
+
 local ServerComm = require(Packages.Comm).ServerComm
 local CombatComm = ServerComm.new(ReplicatedStorage:WaitForChild("Comms"), "CombatComm")
 local CombatService = Knit.CreateService({
     Name = "CombatService";
-    Client = {};
+    Client = {
+        MobHitPlayer = Knit.CreateSignal()
+    };
 })
 
 
@@ -78,6 +82,14 @@ function CombatService:SanitizeInput(player: Player, targetId: number, attackTyp
 end
 
 function CombatService:KnitStart()
+    self.Client.MobHitPlayer:Connect(function(player: Player, mobId: number)
+        local character = player.Character
+        local humanoid = player.Character:WaitForChild("Humanoid", 2)
+        if humanoid then
+            humanoid:TakeDamage(8)
+        end
+    end)
+
     self.SendHitRequest:Connect(function(player: Player, targetId: number, attackType: string)
         local world = Knit.GetService("MatterService"):GetWorld()
         print(`{player.Name} hit {targetId} with {attackType}`)
