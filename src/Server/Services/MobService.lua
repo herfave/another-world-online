@@ -11,6 +11,7 @@ local SharedTableUtil = require(Modules.SharedTableUtil)
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Components = require(Shared.ECS.Components)
+local MobData = require(Shared.MobData)
 
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
@@ -40,12 +41,15 @@ function MobService:CreateActor(actorName: string, template: string)
     return actor
 end
 
-function MobService:CreateMob(): number
+function MobService:CreateMob(mobType: string): number
+    local mobInfo = MobData[mobType]
     local entityId = Knit.GetService("MatterService"):CreateEntity({
-        Components.Mob { value = "TestMob" },
+        Components.Mob { value = mobType },
         Components.MaxHealth { value = 100 },
         Components.Health { value = 100 },
         Components.Enemy { value = true },
+
+        Components.ATK { value = mobInfo.ATK }
     })
 
     SharedTableUtil.insert(STEnemyRegistry, entityId)
@@ -93,7 +97,7 @@ end
 
 function MobService:KnitStart()
     for i = 1, 3 do
-        self:CreateMob()
+        self:CreateMob("TestMob")
         task.wait(0.2)
     end
 end

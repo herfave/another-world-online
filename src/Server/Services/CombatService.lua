@@ -11,6 +11,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Components = require(Shared.ECS.Components)
 local MobAnimationTimes = require(Shared.MobAnimationTimes)
+local MobData = require(Shared.MobData)
 
 local Packages = ReplicatedStorage.Packages
 local Matter = require(Packages.Matter)
@@ -51,8 +52,6 @@ function CombatService:MobAttack(entityId: number, attackType: string)
         local dist = (character:GetPivot().Position - serverModel.value:GetPivot().Position).Magnitude
         return dist <= 100
     end, entityId, attackType)
-
-    
 end
 
 --[=[
@@ -67,6 +66,7 @@ function CombatService:SanitizeInput(player: Player, targetId: number, attackTyp
 
     if mob and model.value then
         local serverModel: Model = model.value
+        if not serverModel or not character then return end
         -- perform sanity checks
         --// DISTANCE CHECK
         local distance = (serverModel:GetPivot().Position - character:GetPivot().Position).Magnitude
@@ -82,11 +82,21 @@ function CombatService:SanitizeInput(player: Player, targetId: number, attackTyp
 end
 
 function CombatService:KnitStart()
-    self.Client.MobHitPlayer:Connect(function(player: Player, mobId: number)
+    self.Client.MobHitPlayer:Connect(function(player: Player, mobId: number, attackType: string)
         local character = player.Character
         local humanoid = player.Character:WaitForChild("Humanoid", 2)
-        if humanoid then
-            humanoid:TakeDamage(8)
+
+        local world: Matter.World = Knit.GetService("MatterService"):GetWorld()
+        if world:contains(mobId) then
+            local mobType, atk = world:get(mobId,
+                Components.Mob,
+                Components.ATK
+            )
+            local animTimes = MobAnimationTimes[mobType.value .. attackType]
+            local damagePerHit = math.floor(atk.value / #animTimes)
+            if humanoid then
+                humanoid:TakeDamage(damagePerHit)
+            end
         end
     end)
 

@@ -226,8 +226,8 @@ function CLASS:Update()
 		
 		--// Lerp field of view //--
 		currentCamera.FieldOfView = Lerp(
-			currentCamera.FieldOfView, 
-			activeCameraSettings.FieldOfView, 
+			currentCamera.FieldOfView,
+			activeCameraSettings.FieldOfView,
 			activeCameraSettings.LerpSpeed
 		)
 		----

@@ -247,8 +247,6 @@ end
 ]=]
 function CharacterController:PlayAnimation(trackName: string)
     assert(self.Animations:GetTrack(trackName), "Could not find animation: " .. trackName)
-    self.Animations:StopAllTracks()
-    task.wait()
     self.Animations:PlayTrack(trackName)
 end
 

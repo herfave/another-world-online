@@ -34,14 +34,14 @@ return function(sm, event, from, to)
     -- create movement forces
     local linearVel: LinearVelocity = Instance.new("LinearVelocity")
     linearVel.RelativeTo = Enum.ActuatorRelativeTo.World
-    linearVel.VectorVelocity = cm.FacingDirection * 8
+    linearVel.VectorVelocity = cm.FacingDirection * 10
     linearVel.MaxForce = primaryPart.AssemblyMass * workspace.Gravity * 2
     linearVel.Attachment0 = primaryPart:FindFirstChild("RootAttachment")
     linearVel.Parent = primaryPart
 
     game:GetService("Debris"):AddItem(linearVel, track.Length * 0.7)
     -- allow for next attack earlier than the animation finishing
-    local frameTime = CharacterController.FrameTime * 7
+    local frameTime = CharacterController.FrameTime * 15
     -- print(track.Length - frameTime)
     if track.Length <= frameTime then
         frameTime = 0

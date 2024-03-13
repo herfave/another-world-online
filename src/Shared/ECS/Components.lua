@@ -9,7 +9,7 @@ local componentNames = {
     "Model", -- {value : Instance} - self-explanatory
     "Mob", -- {value : string}
 
-    "ATK", -- {value: number} - enemy damage to nexus
+    "ATK", -- {value: number} - damage dealt by basic attacks
     "DamageMod", -- {value : number} - modifier to damage, starts at 0
     "FireRateMod", -- {value: number} - modifier for fire rate, starts at 0
 

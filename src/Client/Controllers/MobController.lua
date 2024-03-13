@@ -25,8 +25,13 @@ local SendMobAttack = CombatComm:GetSignal("SendMobAttack")
 
 local MobController = Knit.CreateController({ Name = "MobController" })
 
+-- TODO: setup animation state machine for movement and actions outside of attacking
+function MobController:CreateMobStateMachine(entityId: number, cm: ControllerManager, animations)
+
+end
+
 function MobController:KnitStart()
-    SendMobAttack:Connect(function(entityId: number, attackType: string, _attackId )
+    SendMobAttack:Connect(function(entityId: number, attackType: string)
         local clientEntityId = Knit.GetController("MatterController"):GetClientEntityId(entityId)
         local mob = self.VisualsFolder:FindFirstChild(tostring(clientEntityId))
         -- print(mob)
@@ -34,15 +39,21 @@ function MobController:KnitStart()
             local world: Matter.World = Knit.GetController("MatterController"):GetWorld()
             if world:contains(clientEntityId) then
                 local _janitor = Janitor.new()
-                local anims, hbs = world:get(clientEntityId, Components.MobAnimations, Components.MobHitboxes)
-                local track = anims.player:GetTrack("TestMob" .. attackType)
+                local anims, hbs, model, mobType = world:get(
+                    clientEntityId,
+                    Components.MobAnimations,
+                    Components.MobHitboxes,
+                    Components.MobVisual,
+                    Components.Mob
+                )
+                local track = anims.player:GetTrack(mobType.value .. attackType)
 
                 for hbName, hitbox in hbs.hitboxes do
                     _janitor:Add(hitbox.ObjectHit:Connect(function(model: Model)
                         if Players:GetPlayerFromCharacter(model) == LocalPlayer then
                             -- fire event that they were hit by a mob
                             print(`hit {model.Name} with {hbName}`)
-                            Knit.GetService("CombatService").MobHitPlayer:Fire(entityId)
+                            Knit.GetService("CombatService").MobHitPlayer:Fire(entityId, attackType)
                         end
                     end))
                 end
@@ -63,8 +74,20 @@ function MobController:KnitStart()
                     _janitor:Destroy()
                 end))
 
+                -- do spark, then play animation
+                local attackSpark = model.value:FindFirstChild("AttackSpark", true)
+                if attackSpark then
+                    local emitter: ParticleEmitter = attackSpark:FindFirstChild("Emitter")
+                    emitter:Emit(1)
+                    task.delay(emitter.Lifetime.Max, function()
+                        anims.player:PlayTrack(mobType.value .. attackType)
+                    end)
+                else
+                    task.delay(0.5, function()
+                        anims.player:PlayTrack(mobType.value .. attackType)
+                    end)
+                end
                 print(attackType)
-                anims.player:PlayTrack("TestMob" .. attackType)
             end
         end
     end)
