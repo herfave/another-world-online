@@ -44,7 +44,6 @@ function leaf.finish(obj, status)
         obj.RequestAttackCooldown = 3
 
         task.delay(math.max(1, attackDelay), function()
-            bindable:Fire(obj.EntityId, false, 2)
             obj._hasAttackToken = false
         end)
     end

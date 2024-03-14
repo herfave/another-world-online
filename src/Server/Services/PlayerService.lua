@@ -95,11 +95,41 @@ function PlayerService:AdjustAttackTokens(player: Player, attackers: number)
     player:SetAttribute("AttackTokens", attackers)
 end
 
+function PlayerService:CheckoutAttackTokens(player: Player, enemyId: number, isCheckingOut: boolean, amount: number | nil)
+    local checkedOutTokens = self._attackTokens[player]
+    amount = amount or 1
+    local attackTokens = player:GetAttribute("AttackTokens")
+    -- consume 1 token for this call
+    if isCheckingOut then
+        if #checkedOutTokens < attackTokens and attackTokens - #checkedOutTokens >= amount then
+            for i = 1, amount do
+                table.insert(checkedOutTokens, enemyId)
+            end
+            task.delay(player:GetAttribute("EnemyAttackDelay"), function()
+                self:CheckoutAttackTokens(player, enemyId, false, amount)
+            end)
+        end
+    -- return a token for future use
+    else
+        for i = 1, amount do
+            local index = table.find(checkedOutTokens, enemyId)
+            if index then
+                table.remove(checkedOutTokens, index)
+            end
+        end
+    end
+
+    -- encode state to player attributes so actors can read it
+    local t = HttpService:JSONEncode(checkedOutTokens)
+    player:SetAttribute("HasAttackToken", t)
+end
+
 function PlayerService:KnitStart()
     -- instantiate player function
     local function initPlayer(player)
         local newContainer = PlayerContainer.new(player)
         self._players[player] = newContainer
+        self._attackTokens[player] = {}
         self.ContainerCreated:Fire(player, newContainer)
 
         -- create leader stats
@@ -128,38 +158,19 @@ function PlayerService:KnitStart()
 
         -- create battle circle invocation
         self:AdjustAttackTokens(player, 4)
+        self:AdjustEnemyAttackDelay(player, 4)
         local attackToken = Instance.new("BindableEvent")
-        local checkedOutTokens = {}
         attackToken.Name = "InvokeAttackToken"
-        attackToken.Event:Connect(function(enemyId: number, isCheckingOut: boolean, amount: number | nil)
-            amount = amount or 1
-            local attackTokens = player:GetAttribute("AttackTokens")
-            -- consume 1 token for this call
-            if isCheckingOut then
-                if #checkedOutTokens < attackTokens and attackTokens - #checkedOutTokens >= amount then
-                    for i = 1, amount do
-                        table.insert(checkedOutTokens, enemyId)
-                    end
-                end
-            -- return a token for future use
-            else
-                for i = 1, amount do
-                    local index = table.find(checkedOutTokens, enemyId)
-                    if index then
-                        table.remove(checkedOutTokens, index)
-                    end
-                end
-            end
-
-            -- encode state to player attributes so actors can read it
-            local t = HttpService:JSONEncode(checkedOutTokens)
-            player:SetAttribute("HasAttackToken", t)
+        attackToken.Event:Connect(function(...)
+            self:CheckoutAttackTokens(player, table.unpack({...}))
         end)
         attackToken.Parent = player
 
         STPlayerRegistry[entityId] = player.UserId
 
         player.CharacterAdded:Connect(function(character)
+            -- ignore camera
+            character:AddTag("_CameraIgnore")
             -- insert model component for player
             local world = Knit.GetService("MatterService"):GetWorld()
             local modelComp = world:get(entityId, Components.Model)
@@ -230,12 +241,13 @@ function PlayerService:KnitStart()
                 end
             end)
             playerHumanoid.Died:Connect(function()
-                print("oh snap")
                 player.Character = nil
                 character:Destroy()
                 task.delay(Players.RespawnTime, function()
                     player:LoadCharacter()
                 end)
+
+                self.PlayerDied:Fire(player)
             end)
 
             task.wait()
@@ -261,7 +273,9 @@ function PlayerService:KnitStart()
         local playerContainer = self._players[player]
         playerContainer:Destroy()
 
+        -- clean up container tables
         self._players[player] = nil
+        self._attackTokens[player] = nil
     end
 
     -- load players that joined before 
@@ -280,9 +294,11 @@ end
 
 function PlayerService:KnitInit()
     self._players = {}
+    self._attackTokens = {}
 
     self.CharacterLoadedEvent = Signal.new()
     self.ContainerCreated = Signal.new()
+    self.PlayerDied = Signal.new()
 end
 
 

@@ -6,7 +6,7 @@ return function(world)
             if hbRecord.old and hbRecord.old.hitboxes then
                 for name, hb in hbRecord.old.hitboxes do
                     hb:Destroy()
-                    print("destroyed", name, "hitbox")
+                    -- print("destroyed", name, "hitbox")
                 end
             end
         end

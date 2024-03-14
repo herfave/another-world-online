@@ -19,7 +19,7 @@ local Model = Components.Model
 local models = game.ReplicatedStorage.Assets.Models
 
 return function(world, state)
-    for id, entity in world:query(Components.Mob):without(Model) do
+    for id, entity, origin, maxHealth in world:query(Components.Mob, Components.Origin, Components.MaxHealth):without(Model) do
         local baseModel = models:FindFirstChild("MobBase")
         if not baseModel then continue end
         local model = baseModel:Clone()
@@ -45,8 +45,10 @@ return function(world, state)
         model:SetAttribute("EntityId", id)
 
         model.Parent = workspace:FindFirstChild("Mobs")
-        world:insert(id, Model({
-            value = model
-        }))
+        model:PivotTo(CFrame.new(origin.position))
+        world:insert(id,
+            Model({ value = model}),
+            Components.Health({ value = maxHealth.value })
+        )
     end
 end

@@ -16,6 +16,7 @@ local MobData = require(Shared.MobData)
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
 local Matter = require(Packages.Matter)
+local Signal = require(Packages.Signal)
 
 local MobService = Knit.CreateService({
     Name = "MobService";
@@ -41,15 +42,15 @@ function MobService:CreateActor(actorName: string, template: string)
     return actor
 end
 
-function MobService:CreateMob(mobType: string): number
+function MobService:CreateMob(mobType: string, originPart: BasePart): number
     local mobInfo = MobData[mobType]
     local entityId = Knit.GetService("MatterService"):CreateEntity({
         Components.Mob { value = mobType },
-        Components.MaxHealth { value = 100 },
-        Components.Health { value = 100 },
+        Components.MaxHealth { value = mobInfo.MaxHealth },
         Components.Enemy { value = true },
 
-        Components.ATK { value = mobInfo.ATK }
+        Components.ATK { value = mobInfo.ATK },
+        Components.Origin { position = originPart.Position }
     })
 
     SharedTableUtil.insert(STEnemyRegistry, entityId)
@@ -82,7 +83,7 @@ end
 function MobService:DespawnMob(entityId: number)
     local world: Matter.World = Knit.GetService("MatterService"):GetWorld()
     if world:contains(entityId) then
-
+        local isEnemy, mobType, lastAttacker = world:get(entityId, Components.Enemy, Components.Mob, Components.LastAttacker)
         if self._mobThinks[entityId] then
             self._mobThinks[entityId]:FindFirstChild("Script").Enabled = false
             task.delay(0.1, function()
@@ -92,17 +93,40 @@ function MobService:DespawnMob(entityId: number)
         end
 
         world:despawn(entityId)
+        if isEnemy.value == true then
+            Knit.GetService("GameStateService").EnemyKilled:Fire(entityId, mobType.value, lastAttacker.userId)
+        end
+        self.MobDied:Fire(entityId)
     end
 end
 
 function MobService:KnitStart()
-    for i = 1, 3 do
-        self:CreateMob("TestMob")
-        task.wait(0.2)
+    -- setup mob spawners
+    local spawners = workspace:WaitForChild("MobSpawners")
+    for _, spawner in spawners:GetChildren() do
+        if spawner:HasTag("_MobSpawner") then
+            local mobType = spawner:GetAttribute("MobType")
+            local entityId: number = self:CreateMob(mobType, spawner)
+            local currentIdFromSpawner = entityId
+            
+            -- setup respawn for this spawner
+            self.MobDied:Connect(function(deadId: number)
+                if
+                    deadId == currentIdFromSpawner
+                    and Knit.GetService("GameStateService"):ShouldSpawnMobs()
+                then
+                    task.delay(spawner:GetAttribute("RespawnTime") or 15, function()
+                        local newId: number = self:CreateMob(mobType, spawner)
+                        currentIdFromSpawner = newId
+                    end)
+                end
+            end)
+        end
     end
 end
 
 function MobService:KnitInit()
+    self.MobDied = Signal.new()
     self._mobThinks = {}
 
     local actorsFolder = Instance.new("Folder")

@@ -1,6 +1,7 @@
 local data = {
     ["TestMob"] = {
-        ATK = 8
+        ATK = 8,
+        MaxHealth = 50,
     }
 }
 

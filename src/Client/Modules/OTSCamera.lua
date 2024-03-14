@@ -2,6 +2,7 @@ local CLASS = {}
 
 --// SERVICES //--
 
+local CollectionService = game:GetService("CollectionService")
 local PLAYERS_SERVICE = game:GetService("Players")
 local RUN_SERVICE = game:GetService("RunService")
 local USER_INPUT_SERVICE = game:GetService("UserInputService")
@@ -248,8 +249,8 @@ function CLASS:Update()
 		
 		--// Raycast for obstructions //--
 		local raycastParams = RaycastParams.new()
-		raycastParams.FilterDescendantsInstances = {character, workspace.Mobs, workspace.MobVisuals}
-		raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+		raycastParams.FilterDescendantsInstances = CollectionService:GetTagged("_CameraIgnore")
+		raycastParams.FilterType = Enum.RaycastFilterType.Exclude
 		local raycastResult = workspace:Raycast(
 			humanoidRootPart.Position,
 			newCameraCFrame.p - humanoidRootPart.Position,

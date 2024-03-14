@@ -10,7 +10,6 @@ for _, v in animations:GetDescendants() do
         Utils.getAnimationTimes(v.AnimationId, "Attack")
         :andThen(function(times)
             data[v.Name] = times
-            print(v.Name, data[v.Name])
         end)
     end
 end

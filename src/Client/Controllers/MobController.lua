@@ -52,7 +52,7 @@ function MobController:KnitStart()
                     _janitor:Add(hitbox.ObjectHit:Connect(function(model: Model)
                         if Players:GetPlayerFromCharacter(model) == LocalPlayer then
                             -- fire event that they were hit by a mob
-                            print(`hit {model.Name} with {hbName}`)
+                            -- print(`hit {model.Name} with {hbName}`)
                             Knit.GetService("CombatService").MobHitPlayer:Fire(entityId, attackType)
                         end
                     end))
@@ -87,7 +87,7 @@ function MobController:KnitStart()
                         anims.player:PlayTrack(mobType.value .. attackType)
                     end)
                 end
-                print(attackType)
+                -- print(attackType)
             end
         end
     end)
@@ -97,6 +97,7 @@ end
 function MobController:KnitInit()
     self.VisualsFolder = Instance.new("Folder", workspace)
     self.VisualsFolder.Name = "MobVisuals"
+    self.VisualsFolder:AddTag("_CameraIgnore")
     self.ServerMobs = workspace:WaitForChild("Mobs")
 end
 

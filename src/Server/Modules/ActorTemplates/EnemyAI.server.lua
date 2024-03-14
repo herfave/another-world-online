@@ -30,6 +30,7 @@ local function fixedUpdate()
         obj._hasAttackToken = false
         script.Parent:SetAttribute("Attack", true)
         thread = task.delay(0.7, function()
+            if script.Parent == nil then return end
             script.Parent:SetAttribute("Attack", false)
         end)
     elseif obj.state ~= "Attack" and script.Parent:GetAttribute("Attack") then

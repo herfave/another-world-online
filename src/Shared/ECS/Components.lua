@@ -18,6 +18,8 @@ local componentNames = {
     "FlatDamage", -- {value : number} - applies flat damage amount once
     "DoTDamage", -- {dps : number, duration ; number} - applies damage per second, ex, dps = 4 == 1/0.25s
     "ClientReady", -- {value : boolean} - created when the client has an active model
+    "LastAttacker", -- { player : Player } - the last player to attack a mob
+    "Origin", -- { position: Vector3 } - spawn point of mob
 
     -- CLIENT ONLY
     "MobVisual", -- { value : Model }

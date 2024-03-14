@@ -153,7 +153,7 @@ end
 
 
 function TreeCreator:_createTree(treeFolder)
-	print("Attempt create tree: ",treeFolder)
+	-- print("Attempt create tree: ",treeFolder)
 	local nodes = treeFolder.Nodes
 	local RootFolder = nodes:FindFirstChild("Root")
 	assert(RootFolder, string.format("Could not find Root under BehaviorTrees.Trees.%s.Nodes!",treeFolder.Name))

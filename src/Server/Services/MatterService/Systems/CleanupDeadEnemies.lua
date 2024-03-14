@@ -10,15 +10,16 @@ local Knit = require(game.ReplicatedStorage.Packages.Knit)
 local Matter = require(game.ReplicatedStorage.Packages.Matter)
 
 local Components = require(game.ReplicatedStorage.Shared.ECS.Components)
-local Mob = Components.Mob
 local Health = Components.Health
-local Enemy = Components.Enemy
 
 return function(world)
-    for _id, mob, health in world:query(Mob, Health, Enemy) do
-        if health.value <= 0 then
-            Knit.GetService("MobService"):DespawnMob(_id)
-            -- print("Killed enemy")
+    for entityId, healthRecord in world:queryChanged(Health) do
+        if healthRecord.new then
+            if healthRecord.new.value <= 0 then
+                local lastAttacker = world:get(entityId, Components.LastAttacker)
+                Knit.GetService("MobService"):DespawnMob(entityId, lastAttacker.player)
+                -- print("Killed enemy")
+            end
         end
     end
 end

@@ -101,12 +101,23 @@ function CombatService:KnitStart()
     end)
 
     self.SendHitRequest:Connect(function(player: Player, targetId: number, attackType: string)
-        local world = Knit.GetService("MatterService"):GetWorld()
-        print(`{player.Name} hit {targetId} with {attackType}`)
+        local world: Matter.World = Knit.GetService("MatterService"):GetWorld()
+        -- print(`{player.Name} hit {targetId} with {attackType}`)
         local sanity = self:SanitizeInput(player, targetId, attackType)
         if sanity then
+            -- figure out last attacker
+            local lastAttacker = world:get(targetId, Components.LastAttacker)
+            if lastAttacker then
+                lastAttacker = lastAttacker:patch({userId = player.UserId})
+            else
+                lastAttacker = Components.LastAttacker { userId = player.UserId }
+            end
+
             -- apply damage
-            world:insert(targetId, Components.FlatDamage { value = 10 })
+            world:insert(targetId,
+                Components.FlatDamage { value = 10 },
+                lastAttacker
+            )
         end
     end)
 end

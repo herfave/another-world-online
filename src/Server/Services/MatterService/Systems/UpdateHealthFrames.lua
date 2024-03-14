@@ -7,6 +7,7 @@ return function(world)
     for id, healthRecord in world:queryChanged(Health) do
         if healthRecord.new then
             local maxHealth, model = world:get(id, Components.MaxHealth, Components.Model)
+            if not model then continue end
             if not model.value then print("no model") continue end
             local healthDisplay = model.value:FindFirstChild("HealthDisplay")
             local frame = healthDisplay:FindFirstChild("HealthFrame")
