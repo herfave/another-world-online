@@ -1,9 +1,9 @@
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
 return function(sm, event, from, to)
-
     local CharacterController = Knit.GetController("CharacterController")
     local cm: ControllerManager = CharacterController.ControllerManager
     local primaryPart: BasePart = CharacterController.Character.PrimaryPart
+    local groundSensor: ControllerPartSensor = cm.GroundSensor :: ControllerPartSensor
 
     if CharacterController._delayFall then task.cancel(CharacterController._delayFall) end
     primaryPart.AssemblyLinearVelocity = Vector3.zero
@@ -25,16 +25,25 @@ return function(sm, event, from, to)
     -- get attack trigger
     local connection = track:GetMarkerReachedSignal("Attack"):Connect(function()
         CharacterController.Hitbox:Start()
+        CharacterController:ToggleTrails(true)
     end)
     
     -- play animation
     CharacterController:PlayAnimation(animName)
     CharacterController.AttackEnded = false
 
+    -- calculate directions
+    local newLook = cm.FacingDirection
+    if groundSensor.SensedPart then
+        local newUp = groundSensor.HitNormal
+        local newRight = newUp:Cross(cm.FacingDirection).Unit
+        newLook = newRight:Cross(newUp).Unit
+    end
+
     -- create movement forces
     local linearVel: LinearVelocity = Instance.new("LinearVelocity")
     linearVel.RelativeTo = Enum.ActuatorRelativeTo.World
-    linearVel.VectorVelocity = cm.FacingDirection * 10
+    linearVel.VectorVelocity = newLook * 10
     linearVel.MaxForce = primaryPart.AssemblyMass * workspace.Gravity * 2
     linearVel.Attachment0 = primaryPart:FindFirstChild("RootAttachment")
     linearVel.Parent = primaryPart
@@ -50,6 +59,7 @@ return function(sm, event, from, to)
         CharacterController.AttackCancel = true
         sm.attack_end()
         CharacterController.Hitbox:Stop()
+        CharacterController:ToggleTrails(false)
     end)
 
     -- allow other states to transition out of the attack_end state

@@ -27,15 +27,15 @@ local MobHitboxes = Components.MobHitboxes
 local models = ReplicatedStorage.Assets.Models
 
 return function(world: Matter.World)
-    for id, entity in world:query(Mob, Model):without(MobVisual) do
+    for id, entity, serverModel in world:query(Mob, Model):without(MobVisual) do
+
+
         local baseModel = models:FindFirstChild(entity.value)
         if not baseModel then continue end
         local model = baseModel:Clone()
         model.Name = tostring(id)
-        model.Parent = workspace.MobVisuals
-        world:insert(id, MobVisual({
-            value = model
-        }))
+        model.Parent = workspace:FindFirstChild("MobVisuals")
+        
 
         -- load animations onto model
         local player = AnimationPlayer.new(model:FindFirstChild("Animator", true))
@@ -45,9 +45,14 @@ return function(world: Matter.World)
                 player:WithAnimation(anim)
             end
         end
-        world:insert(id, MobAnimations({
-            player = player
-        }))
+
+
+        -- load state machine
+        Knit.GetController("MobController"):CreateMobStateMachine(
+            id,
+            serverModel.value:FindFirstChildOfClass("ControllerManager"),
+            player
+        )
 
         -- load hitboxes
         local hitboxes = {}
@@ -59,10 +64,23 @@ return function(world: Matter.World)
                 hitboxes[part.Name] = newHitbox
             end
         end
-        world:insert(id, MobHitboxes({
-            hitboxes = hitboxes
-        }))
 
+        world:insert(id, 
+            MobVisual({
+                value = model
+            }),
+            MobAnimations({
+                player = player
+            }),
+
+            MobHitboxes({
+                hitboxes = hitboxes
+            }),
+
+            Components.MobState({
+                value = "Idle"
+            })
+        )
 
         task.spawn(function()
             task.wait()

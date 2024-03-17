@@ -25,6 +25,7 @@ local componentNames = {
     "MobVisual", -- { value : Model }
     "MobAnimations",  -- {player : AnimationPlayer}
     "MobHitboxes", -- { hitboxes : {Hitbox} }
+    "MobState", -- { value : boolean }
 }
 
 -- value names to get serialized

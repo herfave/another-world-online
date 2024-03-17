@@ -70,6 +70,8 @@ function PlayerService:LoadWeapon(player: Player)
     local weaponTemplate = ReplicatedStorage.Assets.Weapons:FindFirstChild("Default")
     local newWeapon = weaponTemplate:Clone()
 
+    newWeapon:AddTag("PlayerWeapon")
+
     -- use RigidConstraints
     local rigid = Instance.new("RigidConstraint")
     rigid.Attachment1 = newWeapon:FindFirstChild("RightGripAttachment", true)
@@ -96,6 +98,7 @@ function PlayerService:AdjustAttackTokens(player: Player, attackers: number)
 end
 
 function PlayerService:CheckoutAttackTokens(player: Player, enemyId: number, isCheckingOut: boolean, amount: number | nil)
+    if not player then return end
     local checkedOutTokens = self._attackTokens[player]
     amount = amount or 1
     local attackTokens = player:GetAttribute("AttackTokens")
@@ -188,6 +191,7 @@ function PlayerService:KnitStart()
 
             -- create mob capsule
             local capsule = ReplicatedStorage.Assets.Models.Capsule:Clone()
+            capsule.Transparency = 1
             local rigid = Instance.new("RigidConstraint")
             rigid.Attachment0 = character:FindFirstChild("RootRigAttachment", true)
             rigid.Attachment1 = capsule:FindFirstChildOfClass("Attachment")

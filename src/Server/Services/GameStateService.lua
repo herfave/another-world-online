@@ -2,7 +2,11 @@
 @class 	GameStateService
     Author: Aaron Jay (seyai_one)
 
-    Track objectives based on config in ReplicatedStorage
+    Track objectives based on config in ReplicatedStorage. Objectives can be loaded in via a module
+    that fires ObjectiveModule.ObjectiveMet when conditions are met for this objective.
+
+    Modules can contain logic to progress an objective, such as the caravan escort moving
+    instantiating the caravan tween(s) internally and reporting values as such
 ]=]
 
 local ServerStorage = game:GetService("ServerStorage")
@@ -24,6 +28,11 @@ function GameStateService:ShouldSpawnMobs(): boolean
     if not self.ObjectiveModule then
         return true
     else
+        if self.GameConfig.AllowRespawn ~= nil then
+            if self.GameConfig.AllowRespawn == false then
+                return false
+            end
+        end
         return not self.ObjectiveModule.Completed
     end
 end

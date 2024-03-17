@@ -7,6 +7,7 @@
 
 ]]
 
+local Knit = require(game.ReplicatedStorage.Packages.Knit)
 local Matter = require(game.ReplicatedStorage.Packages.Matter)
 local Components = require(game.ReplicatedStorage.Shared.ECS.Components)
 local MobVisual = Components.MobVisual
@@ -17,6 +18,7 @@ local function system(world)
             if modelRecord.old and modelRecord.old.value then
                 modelRecord.old.value:Destroy()
                 -- print("Removed model for dead entity")
+                Knit.GetController("MobController"):DestroyMobStateMachine(_id)
             end
         end
     end

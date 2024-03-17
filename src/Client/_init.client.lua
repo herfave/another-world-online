@@ -14,3 +14,5 @@ Knit.AddControllers(PlayerScripts:WaitForChild("Controllers"))
 print("added knit controllers")
 Knit.Start():catch()
 print("loaded knit client")
+
+game:GetService("StarterGui"):SetCoreGuiEnabled(Enum.CoreGuiType.Health, false)

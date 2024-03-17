@@ -15,7 +15,7 @@ local STEnemyCommands = SharedTableRegistry:GetSharedTable("ENEMY_COMMANDS")
 local STEnemyRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("ENEMY_REGISTRY")
 
 local AVOID_RADIUS = 6
-local PLAYER_RADIUS = 8
+local PLAYER_RADIUS = 7
 local ATTACK_RADIUS = 4
 
 local RNG = Random.new()
@@ -94,7 +94,11 @@ function task.run(obj)
     local radius = obj._hasAttackToken and ATTACK_RADIUS or PLAYER_RADIUS
     -- print(radius, distanceFromTarget)
     -- path towards target
-    if math.abs(distanceFromTarget - radius) < 0.5 then
+    local targetFromOrigin = (targetPosition - obj.Origin).Magnitude
+    if targetFromOrigin > obj.Range then
+        obj.TargetEntityId = nil
+        return FAIL
+    elseif math.abs(distanceFromTarget - radius) < 0.5 then
         command.x = 0
         command.z = 0
         STEnemyCommands[entityId] = command

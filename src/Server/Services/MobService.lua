@@ -59,6 +59,8 @@ function MobService:CreateMob(mobType: string, originPart: BasePart): number
     actor:SetAttribute("EntityId", entityId)
     actor:FindFirstChild("Script").Enabled = true
     actor:SetAttribute("AttackCounter", 0)
+    actor:SetAttribute("Origin", originPart.Position)
+    actor:SetAttribute("Range", 30)
     self._mobThinks[entityId] = actor
 
     -- setup listeners for state changes via attributes
@@ -102,25 +104,30 @@ end
 
 function MobService:KnitStart()
     -- setup mob spawners
+    local spawnsPer = 1
     local spawners = workspace:WaitForChild("MobSpawners")
     for _, spawner in spawners:GetChildren() do
         if spawner:HasTag("_MobSpawner") then
-            local mobType = spawner:GetAttribute("MobType")
-            local entityId: number = self:CreateMob(mobType, spawner)
-            local currentIdFromSpawner = entityId
-            
-            -- setup respawn for this spawner
-            self.MobDied:Connect(function(deadId: number)
-                if
-                    deadId == currentIdFromSpawner
-                    and Knit.GetService("GameStateService"):ShouldSpawnMobs()
-                then
-                    task.delay(spawner:GetAttribute("RespawnTime") or 15, function()
-                        local newId: number = self:CreateMob(mobType, spawner)
-                        currentIdFromSpawner = newId
-                    end)
-                end
-            end)
+            for i = 1, spawnsPer do
+                task.wait(0.2)
+                local mobType = spawner:GetAttribute("MobType")
+                local entityId: number = self:CreateMob(mobType, spawner)
+                local currentIdFromSpawner = entityId
+                
+                -- setup respawn for this spawner
+                self.MobDied:Connect(function(deadId: number)
+                    if
+                        deadId == currentIdFromSpawner
+                    then
+                        task.delay(spawner:GetAttribute("RespawnTime") or 15, function()
+                            if Knit.GetService("GameStateService"):ShouldSpawnMobs() then
+                                local newId: number = self:CreateMob(mobType, spawner)
+                                currentIdFromSpawner = newId
+                            end
+                        end)
+                    end
+                end)
+            end
         end
     end
 end

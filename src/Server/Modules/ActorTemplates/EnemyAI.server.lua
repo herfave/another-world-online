@@ -10,9 +10,13 @@ local tree = BTreeCreator:Create(ServerStorage.EnemyTrees.BasicEnemy)
 
 local userId = script.Parent:GetAttribute("UserId")
 local entityId = script.Parent:GetAttribute("EntityId")
+local origin = script.Parent:GetAttribute("Origin")
+local range = script.Parent:GetAttribute("Range")
 
-local dt = 1/20
+local dt = 1/4
 local obj = {
+    Range = range,
+    Origin = origin,
     UserId = userId,
     EntityId = entityId,
     _deltaTime = dt,

@@ -40,7 +40,7 @@ function CombatService:MobAttack(entityId: number, attackType: string)
     local attackTimes = MobAnimationTimes[mob.value .. attackType]
 
     -- send attack to client for animations
-    self.SendMobAttack:FireFilter(function(player)
+    self.SendHitRequest:FireFilter(function(player)
         local character = player.Character
         if not character then return false end
 
@@ -118,6 +118,16 @@ function CombatService:KnitStart()
                 Components.FlatDamage { value = 10 },
                 lastAttacker
             )
+
+            local serverModel = world:get(targetId, Components.Model)
+            if not serverModel.value then return end
+            -- get direction of attacker
+            local direction = CFrame.lookAt(
+                player.Character:GetPivot().Position,
+                serverModel.value:GetPivot().Position
+            ).LookVector
+
+            direction *= 5
         end
     end)
 end
@@ -125,7 +135,6 @@ end
 
 function CombatService:KnitInit()
     self.SendHitRequest = CombatComm:CreateSignal("SendHitRequest", true)
-    self.SendMobAttack = CombatComm:CreateSignal("SendMobAttack")
 end
 
 

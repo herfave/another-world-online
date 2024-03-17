@@ -26,6 +26,7 @@ function module.new(gameConfig: {[string]: any})
         if self.Current >= self.Quota and not self.Completed then
             self.Completed = true
             self.ObjectiveMet:Fire(true)
+            print("Completed?!")
         end
         print(`Objective updated: {self.Current}/{self.Quota}`)
     end)

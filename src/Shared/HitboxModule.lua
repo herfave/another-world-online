@@ -7,25 +7,25 @@
 local RunService = game:GetService("RunService")
 local Signal = require(game.ReplicatedStorage.Packages.Signal)
 local Janitor = require(game.ReplicatedStorage.Packages.Janitor)
-local CastVisuals = require(game.ReplicatedStorage.Shared.CastVisuals)
 local module = {}
 module.__index = module
 
-local DEBUG_ENABLED = true
-
-if DEBUG_ENABLED then
-    CastVisual = CastVisuals.new(Color3.new(1,0,0), workspace)
-end
+local DEBUG_ENABLED = false
 
 export type Hitbox = {
     OriginPart: BasePart,
     ObjectHit: Signal.Signal,
     _janitor: Janitor.Janitor,
     _character: Model,
-    Hits: {Instance}
+    Hits: {Instance},
+    _overlapParams: OverlapParams,
+    DEBUG_PART: BasePart,
+
+    Start: (Hitbox, boolean?, number?) -> (),
+    Stop: (Hitbox) -> (),
 }
 
-function module.new(character, params)
+function module.new(character, params): Hitbox
     local self = {
         OriginPart = params.OriginPart,
         ObjectHit = Signal.new(),
@@ -37,6 +37,7 @@ function module.new(character, params)
     self._overlapParams = OverlapParams.new()
     self._overlapParams.FilterType = Enum.RaycastFilterType.Exclude
     self._overlapParams.MaxParts = 10
+    self._overlapParams.CollisionGroup = "MobCapsule"
 
     if DEBUG_ENABLED then
         self.DEBUG_PART = Instance.new("Part")
@@ -52,17 +53,17 @@ function module.new(character, params)
         self._janitor:Add(self.DEBUG_PART)
     end
 
-    setmetatable(self, module)
-    return self
+    
+    return setmetatable(self :: Hitbox, module) :: Hitbox
 end
 
-function module:Destroy()
+function module.Destroy(self: Hitbox?)
     self._janitor:Destroy()
     self.ObjectHit:Destroy()
     self = nil
 end
 
-function module:Start(getParts: boolean?, endTime: number?)
+function module.Start(self: Hitbox, getParts: boolean?, endTime: number?)
     self._janitor:Cleanup()
 
     self._janitor:Add(function()
@@ -114,7 +115,7 @@ function module:Start(getParts: boolean?, endTime: number?)
     end
 end
 
-function module:Stop()
+function module.Stop(self: Hitbox)
     self._janitor:Cleanup()
     if DEBUG_ENABLED then
         self.DEBUG_PART.Transparency = 1

@@ -8,11 +8,32 @@ local AnimationPlayer = {}
 AnimationPlayer.__index = AnimationPlayer
 AnimationPlayer.ClassName = "AnimationPlayer"
 
+export type AnimationPlayer = {
+	Humanoid: Animator,
+	Tracks: {[string]: AnimationTrack},
+	FadeTime: number,
+	TrackPlayed: Signal.Signal,
+	TrackPlaying: boolean,
+	_tracker: RBXScriptConnection,
+
+	ClearAllTracks: (AnimationPlayer) -> AnimationPlayer,
+	RemoveTrack: (AnimationPlayer, string) -> AnimationPlayer,
+	WithAnimation: (AnimationPlayer, Animation, string?) -> AnimationTrack,
+	AddAnimation: (AnimationPlayer, string, number | string) -> AnimationTrack,
+	GetTrack: (AnimationPlayer, string) -> AnimationTrack,
+	AdjustWeight: (AnimationPlayer, string, number) -> (),
+	PlayTrack: (AnimationPlayer, string, ...number?) -> AnimationTrack,
+	StopTrack: (AnimationPlayer, string, number?) -> AnimationTrack,
+	StopAllTracks: (AnimationPlayer, number?) -> (),
+	GetTracks: (AnimationPlayer) -> {[string]: AnimationTrack},
+	Destroy: (AnimationPlayer) -> (),
+}
+
 --- Constructs a new animation player
 -- @constructor
 -- @tparam Humanoid Humanoid
-function AnimationPlayer.new(Humanoid)
-	local self = setmetatable({}, AnimationPlayer)
+function AnimationPlayer.new(Humanoid): AnimationPlayer
+	local self = setmetatable({} :: AnimationPlayer, AnimationPlayer)
 	-- if type(Humanoid) == "table" then
 	-- 	for i, v in pairs(Humanoid) do
 	-- 		print(i, v)
@@ -38,7 +59,7 @@ function AnimationPlayer.new(Humanoid)
 	return self
 end
 
-function AnimationPlayer:ClearAllTracks()
+function AnimationPlayer.ClearAllTracks(self: AnimationPlayer)
 	for i, v in pairs(self.Tracks) do
 		self.Tracks[i]:Destroy()
 		self.Tracks[i] = nil
@@ -46,7 +67,7 @@ function AnimationPlayer:ClearAllTracks()
 	return self
 end
 
-function AnimationPlayer:RemoveTrack(Name)
+function AnimationPlayer.RemoveTrack(self: AnimationPlayer, Name: string)
 	if self.Tracks[Name] ~= nil then
 		self.Tracks[Name]:Destroy()
 	end
@@ -55,14 +76,14 @@ function AnimationPlayer:RemoveTrack(Name)
 	return self
 end
 
-function AnimationPlayer:WithAnimation(Animation: Animation, name: string | nil)
+function AnimationPlayer.WithAnimation(self: AnimationPlayer, Animation: Animation, name: string | nil)
 	self.Tracks[name or Animation.Name] = self.Humanoid:LoadAnimation(Animation)
 
 	return self.Tracks[name or Animation.Name]
 end
 
 --- Adds an animation to play
-function AnimationPlayer:AddAnimation(Name, AnimationId)
+function AnimationPlayer.AddAnimation(self: AnimationPlayer, Name: string, AnimationId: number | string)
 	local Animation = Instance.new("Animation")
 
 	if tonumber(AnimationId) then
@@ -77,11 +98,11 @@ function AnimationPlayer:AddAnimation(Name, AnimationId)
 end
 
 --- Returns a track in the player
-function AnimationPlayer:GetTrack(TrackName)
+function AnimationPlayer.GetTrack(self: AnimationPlayer, TrackName: string)
 	return self.Tracks[TrackName] --or error("Track does not exist")
 end
 
-function AnimationPlayer:AdjustWeight(TrackName, weight)
+function AnimationPlayer:AdjustWeight(self: AnimationPlayer, TrackName: string, weight: number)
 	local track = self:GetTrack(TrackName)
 	track:AdjustWeight(weight)
 end
@@ -97,18 +118,21 @@ end
 	-- Setting this to 2 will make the animation 2x faster, and setting it to 0.5 will make it
 	-- run 2x slower.
 -- @tparam[opt=0.4] number StopFadeTime
-function AnimationPlayer:PlayTrack(TrackName, FadeTime, Weight, Speed, StopFadeTime)
+function AnimationPlayer.PlayTrack(self: AnimationPlayer, TrackName: string, FadeTime: number?, ...: number?): AnimationTrack
+	local args = {...}
 	FadeTime = FadeTime or self.FadeTime
+	local Weight = args[1] or 0.95
+	local Speed = args[2] or 1
 	local Track = self:GetTrack(TrackName)
 
 	if not Track.IsPlaying then
-		self.TrackPlayed:Fire(TrackName, FadeTime, Weight, Speed, StopFadeTime)
+		self.TrackPlayed:Fire(TrackName, FadeTime, table.unpack({...}))
 
-		self:StopAllTracks(StopFadeTime or FadeTime)
+		self:StopAllTracks(FadeTime)
 		Track:Play(FadeTime, 1, Speed)
 	else
-		self.TrackPlayed:Fire(TrackName, FadeTime, Weight, Speed, StopFadeTime)
-		Track:AdjustWeight(Weight or 0.95)
+		self.TrackPlayed:Fire(TrackName, FadeTime, table.unpack({...}))
+		Track:AdjustWeight(Weight)
 	end
 
 	return Track
@@ -118,7 +142,7 @@ end
 -- @tparam string TrackName
 -- @tparam[opt=0.4] number FadeTime
 -- @treturn AnimationTrack
-function AnimationPlayer:StopTrack(TrackName, FadeTime)
+function AnimationPlayer.StopTrack(self: AnimationPlayer, TrackName: string, FadeTime: number)
 	FadeTime = FadeTime or self.FadeTime
 
 	local Track = self:GetTrack(TrackName)
@@ -129,17 +153,17 @@ function AnimationPlayer:StopTrack(TrackName, FadeTime)
 end
 
 --- Stops all tracks playing
-function AnimationPlayer:StopAllTracks(FadeTime)
+function AnimationPlayer.StopAllTracks(self: AnimationPlayer, FadeTime): ()
 	for TrackName, _ in pairs(self.Tracks) do
 		self:StopTrack(TrackName, FadeTime)
 	end
 end
 
-function AnimationPlayer:GetTracks()
+function AnimationPlayer.GetTracks(self: AnimationPlayer): {[string]: AnimationTrack}
 	return self.Tracks
 end
 ---
-function AnimationPlayer:Destroy()
+function AnimationPlayer.Destroy(self: AnimationPlayer): ()
 	self:StopAllTracks()
 	setmetatable(self, nil)
 end

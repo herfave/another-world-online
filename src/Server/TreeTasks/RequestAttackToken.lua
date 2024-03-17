@@ -91,6 +91,9 @@ function leaf.run(obj)
         if not targetPosition then return FAIL end
 
         if distanceFromTarget > 5 then
+            obj._hasAttackToken = false
+            local bindable = player:FindFirstChild("InvokeAttackToken")
+            bindable:Fire(obj.EntityId, true, 2)
             return FAIL -- should send back to MoveToTarget
         end
 

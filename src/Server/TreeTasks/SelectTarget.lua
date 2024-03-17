@@ -12,8 +12,11 @@ local SUCCESS,FAIL,RUNNING = 1,2,3
 local ServerStorage = game:GetService("ServerStorage")
 local SharedTableUtil = require(ServerStorage.Modules.SharedTableUtil)
 
-local STMobPosition = game:GetService("SharedTableRegistry"):GetSharedTable("MOB_POSITION")
-local STEnemyRegistry = game:GetService("SharedTableRegistry"):GetSharedTable("ENEMY_REGISTRY")
+local SharedTableRegistry = game:GetService("SharedTableRegistry")
+
+local STMobPosition = SharedTableRegistry:GetSharedTable("MOB_POSITION")
+local STEnemyRegistry = SharedTableRegistry:GetSharedTable("ENEMY_REGISTRY")
+local STEnemyCommands = SharedTableRegistry:GetSharedTable("ENEMY_COMMANDS")
 
 function task.start(obj)
     -- print(`[{obj.EntityId}] Started SelectTarget`)
@@ -24,9 +27,10 @@ end
 
 function task.run(obj)
     -- iterate through all player positions and find the closest
-    local distanceToBeat = math.huge
-    local currentPosition = STMobPosition[obj.EntityId]
+    local distanceToBeat = obj.Range
+    local currentPosition = obj.Origin
     if not currentPosition then return RUNNING end
+    obj.TargetEntityId = nil
     for mobEntityId, position in STMobPosition do
         if obj.EntityId == mobEntityId then continue end -- skip self
         if SharedTableUtil.find(STEnemyRegistry, mobEntityId) then continue end -- skip fellow enemies
@@ -35,9 +39,19 @@ function task.run(obj)
         if distance < distanceToBeat then
             distanceToBeat = distance
             obj.TargetEntityId = mobEntityId
+            STEnemyCommands[obj.EntityId] = {
+                x = 0,
+                y = 0,
+                z = 0,
+                fa = position
+            }
         end
     end
 
-    return SUCCESS
+    if obj.TargetEntityId then
+        return SUCCESS
+    else
+        return FAIL
+    end
 end
 return task

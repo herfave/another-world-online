@@ -30,9 +30,23 @@ local SendHitRequest = CombatComm:GetSignal("SendHitRequest")
 -- FSM callbacks
 local OnAttack = require(script.OnAttack)
 local OnEnterJumping = require(script.OnEnterJumping)
+local OnDash = require(script.OnDash)
 
 local CharacterController = Knit.CreateController { Name = "CharacterController" }
 
+function CharacterController:ToggleTrails(state: boolean?)
+    for _, part in self.Weapons do
+        for _, trail in part:GetChildren() do
+            if trail:IsA("Trail") then
+                if state then
+                    trail.Enabled = state
+                else
+                    trail.Enabled = not trail.Enabled
+                end
+            end
+        end
+    end
+end
 
 function CharacterController:InitStateMachine(cm: ControllerManager)
     self.JumpCounter = 0
@@ -52,17 +66,17 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
             {
                 name = "walk",
                 to = "walking" ,
-                from = {"idle", "running", "falling", "attack_end", "jumping"},
+                from = {"idle", "running", "falling", "attack_end", "jumping", "railgrinding"},
             },
             {
                 name = "run",
                 to = "running",
-                from = {"walking", "falling", "dashing"},
+                from = {"walking", "falling", "dashing", "railgrinding"},
             },
             {
                 name = "jump",
                 to = "jumping",
-                from = {"idle", "walking", "running", "falling", "attack_end"},
+                from = {"idle", "walking", "running", "falling", "attack_end", "railgrinding"},
             },
             {
                 name = "fall",
@@ -79,20 +93,33 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
                 to = "attack_end",
                 from = {"attacking", "falling"},
             },
+
+            {
+                name = "railgrind",
+                to = "railgrinding",
+                from = {"walking", "running", "jumping", "falling", "attack_end"}
+            },
+
+            {
+                name = "rail_attack",
+                to = "rail_attacking",
+                from = {"railgrind", "attack_end"}
+            },
+
             {
                 name = "stop",
                 to = "idle",
-                from = {"walking", "running", "falling", "attack_end", "jumping"},
+                from = {"walking", "running", "falling", "attack_end", "jumping", "railgrinding"},
             },
             {
                 name = "climb",
                 to = "climbing",
-                from = {"idle", "walking", "running", "jumping", "falling", "attack_end"},
+                from = {"idle", "walking", "running", "jumping", "falling", "attack_end", "railgrinding"},
             },
             {
                 name = "dash",
                 to = "dashing",
-                from = {"idle", "walking", "running", "jumping", "falling", "attack_end"},
+                from = {"idle", "walking", "running", "jumping", "falling", "attack_end", "railgrinding"},
             }
         },
         callbacks = {
@@ -101,6 +128,10 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
                 self:PlayAnimation("Idle")
             end,
             on_walk = function(sm, event, from, to)
+                setController("GroundController")
+                self:PlayAnimation("Walk")
+            end,
+            on_run = function(sm, event, from, to)
                 setController("GroundController")
                 self:PlayAnimation("Walk")
             end,
@@ -117,7 +148,10 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
             end,
 
             -- Attack state transition
-            on_attack = OnAttack
+            on_attack = OnAttack, 
+
+            -- Dash state transition
+            on_dash = OnDash
         }
     })
     self.StateMachine = stateMachine
@@ -134,10 +168,13 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
 
     -- Returns true if the GroundSensor found a Part, we don't have the GroundController active, and we didn't just Jump
     local function checkWalkingState()
+        local vel = cm.RootPart.AssemblyLinearVelocity
+        local flatVel = vel - Vector3.new(0, vel.Y, 0)
         return groundSensor.SensedPart ~= nil
-            and cm.MovingDirection.Magnitude > 0
+            and flatVel.Magnitude > 5
             and stateMachine.current ~= "jumping"
             and stateMachine.current ~= "walking"
+            and stateMachine.current ~= "running"
             and stateMachine.can("walk")
     end
 
@@ -151,8 +188,17 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
     -- Returns true if the GroundSensor found a part, the GroundController is active,
     -- we have no movement, and the state machine isn't idle
     local function checkIdleState()
+        local vel = cm.RootPart.AssemblyLinearVelocity
+        local flatVel = vel - Vector3.new(0, vel.Y, 0)
+
+        -- print(groundSensor.SensedPart ~= nil
+        -- ,flatVel.Magnitude < 5
+        -- ,not (primaryPart.AssemblyLinearVelocity.Y > 2)
+        -- ,stateMachine.current ~= "idle"
+        -- ,stateMachine.can("stop"))
+
         return groundSensor.SensedPart ~= nil
-            and cm.MovingDirection.Magnitude == 0
+            and flatVel.Magnitude < 5
             and not (primaryPart.AssemblyLinearVelocity.Y > 0)
             and stateMachine.current ~= "idle"
             and stateMachine.can("stop")
@@ -194,6 +240,8 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
 
         if not table.find(validMovementStates, stateMachine.current) then
             cm.MovingDirection = Vector3.zero
+
+            -- check nearest target
             return
         end
         cm.MovingDirection = dir
@@ -240,6 +288,13 @@ function CharacterController:InitActionListener(humanoid: Humanoid)
             stateMachine.attack()
         end
     end))
+
+    -- listen for dashes
+    self._janitor:Add(self.DashEvent:Connect(function()
+        if stateMachine.can("dash") and not self.DashOnCooldown then
+            stateMachine.dash()
+        end
+    end))
 end
 --[=[
     Plays an animation with a given name if it exists
@@ -281,8 +336,11 @@ function CharacterController:KnitStart()
             OriginPart = character:WaitForChild("Default"),
         })
         self._janitor:Add(hitbox.ObjectHit:Connect(function(hit: Model)
-            -- send hit request
-            SendHitRequest:Fire(tonumber(hit.Name), "Basic")
+            if hit.Parent == Knit.GetController("MobController").ServerMobs then
+                -- send hit request
+                SendHitRequest:Fire(tonumber(hit.Name), "Basic")
+                Knit.GetController("MobController"):PlayAttackedShake(tonumber(hit.Name))
+            end
         end))
         self.Hitbox = hitbox
 
@@ -299,6 +357,13 @@ function CharacterController:KnitStart()
             self.FrameTime = dt
         end)
 
+        self.Weapons = {}
+        for _, v in character:GetChildren() do
+            if v:HasTag("PlayerWeapon") then
+                table.insert(self.Weapons, v)
+            end
+        end
+
         OTSCamera:Enable()
     end)
 end
@@ -312,6 +377,7 @@ function CharacterController:KnitInit()
     self._janitor = Janitor.new()
     self.CharacterAddedEvent = Signal.new() -- // Knit Controllers should connect to this event if the character is needed
     self.AttackEvent = Signal.new()
+    self.DashEvent = Signal.new()
 end
 
 
