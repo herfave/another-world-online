@@ -34,7 +34,7 @@ function InputController:KnitStart()
     end)
 
     self.Keyboard.KeyDown:Connect(function(key: Enum.KeyCode)
-        if key == Enum.KeyCode.LeftControl or key == Enum.KeyCode.LeftAlt then
+        if key == Enum.KeyCode.LeftShift then
             Knit.GetController("CharacterController").DashEvent:Fire()
         end
     end)

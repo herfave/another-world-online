@@ -11,7 +11,7 @@ M.PENDING = 3
 M.CANCELLED = 4
 
 export type StateMachineType = {
-	[string]: (any) -> ()
+	[string]: any
 }
 
 local function do_callback(handler, args)

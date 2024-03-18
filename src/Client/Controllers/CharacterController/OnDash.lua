@@ -17,11 +17,12 @@ return function(sm, event, from, to)
     end
 
     -- create movement forces
+    local root = primaryPart:FindFirstChild("RootAttachment")
     local linearVel: LinearVelocity = Instance.new("LinearVelocity")
     linearVel.RelativeTo = Enum.ActuatorRelativeTo.World
     linearVel.VectorVelocity = newLook * DashSpeed
     linearVel.MaxForce = math.huge
-    linearVel.Attachment0 = primaryPart:FindFirstChild("RootAttachment")
+    linearVel.Attachment0 = root
     linearVel.Parent = primaryPart
 
     game:GetService("Debris"):AddItem(linearVel, DashTime)

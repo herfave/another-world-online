@@ -41,11 +41,12 @@ return function(sm, event, from, to)
     end
 
     -- create movement forces
+    local root = primaryPart:FindFirstChild("RootAttachment")
     local linearVel: LinearVelocity = Instance.new("LinearVelocity")
     linearVel.RelativeTo = Enum.ActuatorRelativeTo.World
     linearVel.VectorVelocity = newLook * 10
     linearVel.MaxForce = primaryPart.AssemblyMass * workspace.Gravity * 2
-    linearVel.Attachment0 = primaryPart:FindFirstChild("RootAttachment")
+    linearVel.Attachment0 = root
     linearVel.Parent = primaryPart
 
     game:GetService("Debris"):AddItem(linearVel, track.Length * 0.7)
