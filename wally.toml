@@ -21,12 +21,16 @@ Comm = "sleitnick/comm@^1.0.1"
 Component = "sleitnick/component@^2.4.8"
 Input = "sleitnick/input@^2.3.0"
 
+t = "osyrisrblx/t@3.1.1"
+
 # React dependencies
 React = "jsdotlua/react@^17.0.2"
 ReactRoblox = "jsdotlua/react-roblox@^17.0.2"
 ReactSpring = "chriscerie/react-spring@^2.0.0"
 ReactErrorBoundary = "chriscerie/react-error-boundary@^0.2.0"
 RoactTemplate = "corecii/roact-template@^0.2.0"
+Reflex = "littensy/reflex@^4.3.1"
+ReactReflex = "littensy/react-reflex@^0.3.5"
 
 # ECS dependencies
 Matter = "matter-ecs/matter@0.7.0"
