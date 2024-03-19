@@ -32,6 +32,8 @@ local OnAttack = require(script.OnAttack)
 local OnEnterJumping = require(script.OnEnterJumping)
 local OnDash = require(script.OnDash)
 
+local DEBUG_FSM = true
+
 local CharacterController = Knit.CreateController { Name = "CharacterController" }
 
 function CharacterController:ToggleTrails(state: boolean?)
@@ -151,7 +153,13 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
             on_attack = OnAttack, 
 
             -- Dash state transition
-            on_dash = OnDash
+            on_dash = OnDash,
+
+            on_enter_state = function(sm, event, from, to)
+                if DEBUG_FSM then
+                    print("new state:", to)
+                end
+            end
         }
     })
     self.StateMachine = stateMachine
@@ -173,8 +181,6 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
         return groundSensor.SensedPart ~= nil
             and flatVel.Magnitude > 5
             and stateMachine.current ~= "jumping"
-            and stateMachine.current ~= "walking"
-            and stateMachine.current ~= "running"
             and stateMachine.can("walk")
     end
 
@@ -193,7 +199,7 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
 
         -- print(groundSensor.SensedPart ~= nil
         -- ,flatVel.Magnitude < 5
-        -- ,not (primaryPart.AssemblyLinearVelocity.Y > 2)
+        -- ,not (primaryPart.AssemblyLinearVelocity.Y > 0)
         -- ,stateMachine.current ~= "idle"
         -- ,stateMachine.can("stop"))
 
@@ -208,9 +214,9 @@ function CharacterController:InitStateMachine(cm: ControllerManager)
     local function updateStateAndActiveController()
         if not self.AttackEnded then return end
 
-        if checkClimbingState() then
-            stateMachine.climb()
-        elseif checkWalkingState() then
+        -- if checkClimbingState() then
+        --     stateMachine.climb()
+        if checkWalkingState() then
             stateMachine.walk()
         elseif checkFreefallState() then
             stateMachine.fall()

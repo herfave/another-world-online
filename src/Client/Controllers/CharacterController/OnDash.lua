@@ -60,8 +60,10 @@ return function(sm, event, from, to)
         if cast then
             if cast.Instance then
                 -- linearVel.VectorVelocity = Vector3.zero
-                print("hit")
-                _janitor:Cleanup()
+                if cast.Instance.Anchored == true then
+                    print("hit")
+                    _janitor:Cleanup()
+                end
             end
         end
     end))
