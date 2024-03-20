@@ -25,12 +25,12 @@ return function(sm, event, from, to)
     -- get attack trigger
     local connection = track:GetMarkerReachedSignal("Attack"):Connect(function()
         CharacterController.Hitbox:Start()
-        CharacterController:ToggleTrails(true)
     end)
     
     -- play animation
     CharacterController:PlayAnimation(animName)
     CharacterController.AttackEnded = false
+    CharacterController:ToggleTrails(true)
 
     -- calculate directions
     local newLook = cm.FacingDirection
@@ -60,7 +60,6 @@ return function(sm, event, from, to)
         CharacterController.AttackCancel = true
         sm.attack_end()
         CharacterController.Hitbox:Stop()
-        CharacterController:ToggleTrails(false)
     end)
 
     -- allow other states to transition out of the attack_end state
@@ -70,6 +69,7 @@ return function(sm, event, from, to)
     CharacterController._inAttack = task.delay(track.Length, function()
         CharacterController.AttackEnded = true
         connection:Disconnect()
+        CharacterController:ToggleTrails(false)
     end)
 
     -- reset attacks, put on cooldown after combo
