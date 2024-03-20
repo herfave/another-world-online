@@ -10,7 +10,6 @@
         "ReplicatedStorage": {
             "$ignoreUnknownInstances": true,
             "$className": "ReplicatedStorage",
-            "$path": "src/ReplicatedStorage",
             "Shared": {
                 "$className": "Folder",
                 "$path": "src/Shared"
@@ -29,7 +28,12 @@
         "ServerStorage": {
             "$ignoreUnknownInstances": true,
             "$className": "ServerStorage",
-            "$path": "src/Server"
+            "$path": "src/Server",
+
+            "Packages": {
+                "$className": "Folder",
+                "$path": "ServerPackages"
+            }
         },
 
         "StarterPlayer": {

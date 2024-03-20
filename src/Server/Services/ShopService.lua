@@ -31,7 +31,7 @@ end
 function ShopService:PurchaseItem(player, shopItemId, amount)
     local container = PlayerService:GetContainer(player)
     if container then
-        container.Replica:Write("PurchaseItem", shopItemId, amount or 1)
+        -- container.Replica:Write("PurchaseItem", shopItemId, amount or 1)
     end
 end
 
