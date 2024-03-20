@@ -1,0 +1,37 @@
+diff --git a/roact-template/src/lib/init.lua b/roact-template/src/lib/init.lua
+index 9d446a3..6109410 100644
+--- a/roact-template/src/lib/init.lua
++++ b/roact-template/src/lib/init.lua
+@@ -12,7 +12,7 @@ end
+ 
+ type Roact = {
+ 	createElement: (...any) -> ...any,
+-	createFragment: (...any) -> ...any,
++	Fragment: (...any) -> ...any,
+ 	Children: any,
+ }
+ 
+@@ -511,7 +511,8 @@ local function elementFromTemplate(
+ 			children[name] = elementFromTemplate(Roact, child, slowSelectors, fastSelectors)
+ 		end
+ 
+-		return Roact.createFragment(children)
++		return Roact.createElement(Roact.Fragment, nil, children)
++		-- return Roact.createFragment(children)
+ 	end
+ 	assert(template.type == "element", "always") -- typechecker assert
+ 
+@@ -538,9 +539,10 @@ local function elementFromTemplate(
+ 	end
+ 
+ 	if template.singleFragment then
+-		element = Roact.createFragment({
+-			[template.instance.Name] = element,
+-		})
++		element = Roact.createElement(Roact.Fragment, nil, {element})
++		-- element = Roact.createFragment({
++		-- 	[template.instance.Name] = element,
++		-- })
+ 	end
+ 
+ 	return element
