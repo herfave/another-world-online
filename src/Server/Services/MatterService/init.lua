@@ -82,12 +82,7 @@ function MatterService:GetWorld(): Matter.World
 end
 
 function MatterService:KnitStart()
-    local world: Matter.World, state = startWorld({
-        script.Systems,
-        Shared.ECS.Systems
-    })
-    self._world = world
-
+    local world = self._world
     -- set ready status for entities
     self.Client.ClientModelReady:Connect(function(player, entityId)
         if world:contains(entityId) then
@@ -98,6 +93,11 @@ end
 
 
 function MatterService:KnitInit()
+    local world: Matter.World, state = startWorld({
+        script.Systems,
+        Shared.ECS.Systems
+    })
+    self._world = world
     self._namedEntities = {}
 end
 
