@@ -32,7 +32,7 @@ local OnAttack = require(script.OnAttack)
 local OnEnterJumping = require(script.OnEnterJumping)
 local OnDash = require(script.OnDash)
 
-local DEBUG_FSM = true
+local DEBUG_FSM = false
 
 local CharacterController = Knit.CreateController { Name = "CharacterController" }
 
