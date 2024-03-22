@@ -25,7 +25,7 @@ return function(props: {
     end)
     return e(bottomBarTemp, {
         HealthDisplay = {
-            Size = UDim2.fromScale(health/100, 1)
+            Size = UDim2.fromScale(health/props.humanoid.MaxHealth, 1)
         }
     })
 end
