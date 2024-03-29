@@ -13,6 +13,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Components = require(Shared.ECS.Components)
 local BuildDataProducer = require(Shared.BuildDataProducer)
+local Utils = require(Shared.Utils)
 
 local Packages = ReplicatedStorage.Packages
 local Knit = require(Packages.Knit)
@@ -31,7 +32,8 @@ local PlayerService = Knit.CreateService {
         SendFirstTime = Knit.CreateSignal(),
         CharacterLoaded = Knit.CreateSignal(),
         TransmitData = Knit.CreateSignal(),
-        ReceiveReady = Knit.CreateSignal()
+        ReceiveReady = Knit.CreateSignal(),
+        LoadedKeep = Knit.CreateSignal(),
     };
 }
 
@@ -65,6 +67,23 @@ function PlayerService:LoadWeapon(player: Player)
     rigid.Parent = newWeapon
     
     newWeapon.Parent = player.Character
+end
+
+function PlayerService:CustomLoadCharacter(player)
+    local rig = ReplicatedStorage.Assets.Models:FindFirstChild("R6Rig")
+    local newRig = rig:Clone()
+    newRig.Parent = workspace
+    newRig.Name = player.Name
+    BuildCharacter(newRig, player)
+
+    local spawnCF: CFrame = Utils.getRandomInPart(
+        workspace:FindFirstChild("LobbySpawn", true)
+    )
+
+    newRig:PivotTo(spawnCF * CFrame.new(0, 2, 0))
+    local desc = game.Players:GetHumanoidDescriptionFromUserId(math.abs(player.UserId))
+    newRig:FindFirstChildOfClass("Humanoid"):ApplyDescription(desc)
+    player.Character = newRig
 end
 
 --[=[
@@ -124,11 +143,11 @@ function PlayerService:KnitStart()
         end,
         hydrateRate = -1,
         beforeHydrate = function(player, state)
-            local newState = table.clone(state)
+            local newState = {}
             local stringId = tostring(player.UserId)
-            for key, entities in newState do
-                newState[key].entities = {
-                    [stringId] = state[key].entities[stringId]
+            for key, entities in state do
+                newState[key] = {
+                    [stringId] = state[key][stringId]
                 }
             end
             return newState
@@ -190,6 +209,7 @@ function PlayerService:KnitStart()
             STPlayerRegistry[entityId] = player.UserId
 
             player.CharacterAdded:Connect(function(character)
+                character.PrimaryPart = character:WaitForChild("HumanoidRootPart")
                 local playerHumanoid = character:WaitForChild("Humanoid")
                 for _, v in ipairs(character:GetChildren()) do
                     if v:IsA("BasePart") then
@@ -203,6 +223,7 @@ function PlayerService:KnitStart()
                     character:Destroy()
                     task.delay(Players.RespawnTime, function()
                         player:LoadCharacter()
+                        -- self:CustomLoadCharacter(player)
                     end)
 
                     self.PlayerDied:Fire(player)
@@ -210,14 +231,18 @@ function PlayerService:KnitStart()
 
                 task.wait()                
                 -- load weapon
-                self:LoadWeapon(player)
+                -- self:LoadWeapon(player)
 
                 self.CharacterLoadedEvent:Fire(player, character)
                 self.Client.CharacterLoaded:Fire(player, character)
+                print("Started character")
             end)
         end)
         :andThen(function()
+            task.wait(1)
+            -- self:CustomLoadCharacter(player)
             player:LoadCharacter()
+            self.Client.LoadedKeep:Fire(player)
         end)
     end
 

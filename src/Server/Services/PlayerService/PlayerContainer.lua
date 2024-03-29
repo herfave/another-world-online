@@ -17,13 +17,6 @@ end
 local PlayerContainer = {}
 PlayerContainer.__index = PlayerContainer
 
-type Container = {
-    _player: Player,
-    _janitor: any,
-    _producer: any,
-    Keep: DataKeep.Keep
-}
-
 function PlayerContainer.new(player: Player, producer)
     local self = {
         _player = player,
@@ -57,7 +50,7 @@ function PlayerContainer.new(player: Player, producer)
 
             local function selectPlayerEntity(state)
                 local stringId = tostring(player.UserId)
-                return state[key].entities[stringId]
+                return state[key][stringId]
             end
 
             self._janitor:Add(producer:subscribe(selectPlayerEntity, function(current, last)
@@ -86,7 +79,7 @@ function PlayerContainer:GetDataAtPath(originalPath)
        end
     end
 
-    if(currentPoint ~= self.Profile.Data) then
+    if(currentPoint ~= self.Keep.Data) then
         return currentPoint
     end
 
