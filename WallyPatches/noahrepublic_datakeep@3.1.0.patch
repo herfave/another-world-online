@@ -1,0 +1,13 @@
+diff --git a/datakeep/src/init.lua b/datakeep/src/init.lua
+index 9fd45f3..d8698e8 100644
+--- a/datakeep/src/init.lua
++++ b/datakeep/src/init.lua
+@@ -14,6 +14,8 @@ local MockStore = require(script.MockStore)
+ 
+ local Keep = require(script.Keep)
+ 
++export type Keep = Keep.Keep
++
+ --> Structure
+ 
+ --[=[

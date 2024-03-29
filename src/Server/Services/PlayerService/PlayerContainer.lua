@@ -17,6 +17,13 @@ end
 local PlayerContainer = {}
 PlayerContainer.__index = PlayerContainer
 
+type Container = {
+    _player: Player,
+    _janitor: any,
+    _producer: any,
+    Keep: DataKeep.Keep
+}
+
 function PlayerContainer.new(player: Player, producer)
     local self = {
         _player = player,
